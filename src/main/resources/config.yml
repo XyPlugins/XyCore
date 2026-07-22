@@ -9,22 +9,38 @@
 # ============================================================
 
 modules:
-  # LoreCommandBind：识别物品 Lore，并执行服务端预设命令或 AttributePlus 属性效果。
-  # 配置文件：plugins/XyCore/modules/LoreCommandBind.yml
+  # ============================================================
+  # 模块总开关
+  # false = 关闭模块，不生成/不加载对应模块配置。
+  # true  = 开启模块，启动服务器或执行 /xycore reload 后生成对应模块配置。
+  # 已开启模块改回 false 并执行 /xycore reload 后，会删除对应模块 yml。
+  # ============================================================
+
+  # LoreCommandBind：Lore 识别指令模块。
+  # 作用：识别物品 Lore，触发服务端预设命令、冷却、消耗、条件和临时属性效果。
+  # 开启后生成：plugins/XyCore/modules/LoreCommandBind.yml
   lore-command-bind: false
 
-  # WorldProtect：世界保护模块，可禁止破坏/放置/桶/展示框/盔甲架等行为。
-  # 配置文件：plugins/XyCore/modules/world-protect.yml
+  # WorldProtect：世界保护模块。
+  # 作用：按世界禁止方块破坏/放置、桶、展示框、画、盔甲架等行为。
+  # 开启后生成：plugins/XyCore/modules/world-protect.yml
   world-protect: false
 
-  # WorldPermission：按世界临时给予/收回权限。
-  # 适合让玩家只在家园世界拥有 essentials.tpa、essentials.sethome 等权限。
-  # 配置文件：plugins/XyCore/modules/world-permission.yml
+  # WorldPermission：世界权限管控模块。
+  # 作用：按世界临时给予或收回权限，适合只在家园世界开放 essentials.tpa / essentials.sethome。
+  # 开启后生成：plugins/XyCore/modules/world-permission.yml
   world-permission: false
 
-  # 以下是预留模块开关，当前版本不会生成对应功能。
+  # Kit：礼包/新手包模块预留开关。
+  # 当前 0.3.0 暂未实现，开启也不会生成模块配置。
   kit: false
+
+  # Nickname：昵称模块预留开关。
+  # 当前 0.3.0 暂未实现，后续可用于玩家昵称、称号显示等功能。
   nickname: false
+
+  # Script：脚本模块预留开关。
+  # 当前 0.3.0 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
   script: false
 
 storage:

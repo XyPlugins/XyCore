@@ -42,13 +42,31 @@ plugins/XyCore/config.yml
 
 ```yaml
 modules:
+  # LoreCommandBind：Lore 识别指令模块。
+  # 作用：识别物品 Lore，触发服务端预设命令、冷却、消耗、条件和临时属性效果。
+  # 开启后生成：plugins/XyCore/modules/LoreCommandBind.yml
   lore-command-bind: false
+
+  # WorldProtect：世界保护模块。
+  # 作用：按世界禁止方块破坏/放置、桶、展示框、画、盔甲架等行为。
+  # 开启后生成：plugins/XyCore/modules/world-protect.yml
   world-protect: false
+
+  # WorldPermission：世界权限管控模块。
+  # 作用：按世界临时给予或收回权限，适合只在家园世界开放 essentials.tpa / essentials.sethome。
+  # 开启后生成：plugins/XyCore/modules/world-permission.yml
   world-permission: false
 
-  # 预留模块，当前版本暂未实现对应功能。
+  # Kit：礼包/新手包模块预留开关。
+  # 当前 0.3.0 暂未实现，开启也不会生成模块配置。
   kit: false
+
+  # Nickname：昵称模块预留开关。
+  # 当前 0.3.0 暂未实现，后续可用于玩家昵称、称号显示等功能。
   nickname: false
+
+  # Script：脚本模块预留开关。
+  # 当前 0.3.0 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
   script: false
 ```
 
