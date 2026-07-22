@@ -70,6 +70,22 @@ public final class ModuleManager implements org.xyplugin.xycore.api.service.Relo
         return states;
     }
 
+    public List<CoreModule> getEnabledModules() {
+        List<CoreModule> enabled = new ArrayList<>();
+        for (CoreModule module : modules.values()) {
+            if (module.isEnabled()) enabled.add(module);
+        }
+        return Collections.unmodifiableList(enabled);
+    }
+
+    public int getEnabledModuleCount() {
+        int count = 0;
+        for (CoreModule module : modules.values()) {
+            if (module.isEnabled()) count++;
+        }
+        return count;
+    }
+
     private boolean isConfiguredEnabled(CoreModule module) {
         String path = "modules." + module.getId();
         if (plugin.getConfig().isSet(path)) return plugin.getConfig().getBoolean(path);

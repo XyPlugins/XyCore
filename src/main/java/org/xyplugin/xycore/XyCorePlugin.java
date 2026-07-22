@@ -1,8 +1,10 @@
 package org.xyplugin.xycore;
 
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.xyplugin.xycore.api.XyCoreApi;
+import org.xyplugin.xycore.api.item.ItemProvider;
 import org.xyplugin.xycore.internal.CoreApiImpl;
 import org.xyplugin.xycore.internal.command.CoreCommand;
 import org.xyplugin.xycore.internal.listener.CoreListener;
@@ -54,7 +56,7 @@ public final class XyCorePlugin extends JavaPlugin {
         long minutes = Math.max(1L, getConfig().getLong("player-data.autosave-minutes", 5L));
         autosaveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this,
                 () -> api.getPlayerData().saveAll(), minutes * 1200L, minutes * 1200L).getTaskId();
-        getLogger().info("XyCore " + api.getVersion() + " 已启用，存储后端: " + api.getStorage().getBackendName());
+        logStartupSummary();
     }
 
     @Override
@@ -104,6 +106,74 @@ public final class XyCorePlugin extends JavaPlugin {
             papiBridge = null;
             getLogger().warning("PlaceholderExpansion 不兼容，已禁用 PAPI 桥接: " + failure.getMessage());
         }
+    }
+
+    /** 输出启动摘要：模块数量、已开启模块和软依赖挂钩状态。 */
+    private void logStartupSummary() {
+        getLogger().info("============================================================");
+        getLogger().info("XyCore " + api.getVersion() + " 已启用，存储后端: " + api.getStorage().getBackendName());
+        logModuleSummary();
+        logSoftDependencySummary();
+        getLogger().info("============================================================");
+    }
+
+    private void logModuleSummary() {
+        int count = moduleManager == null ? 0 : moduleManager.getEnabledModuleCount();
+        getLogger().info("当前" + count + "个模块已开启。");
+        if (count <= 0) {
+            getLogger().info("模块: 无");
+            return;
+        }
+
+        StringBuilder names = new StringBuilder();
+        for (CoreModule module : moduleManager.getEnabledModules()) {
+            if (names.length() > 0) names.append(", ");
+            names.append(module.getDisplayName()).append("(").append(module.getId()).append(")");
+        }
+        getLogger().info("模块: " + names);
+    }
+
+    private void logSoftDependencySummary() {
+        getLogger().info("软依赖挂钩状态:");
+        getLogger().info(" - Vault: " + hookStatus("Vault", "integrations.vault",
+                api.getEconomy().isAvailable(), api.getEconomy().getProviderName(), "未挂钩（未找到经济插件服务）"));
+        getLogger().info(" - PlaceholderAPI: " + hookStatus("PlaceholderAPI", "integrations.placeholderapi",
+                papiBridge != null, "%xycore_*%", "未挂钩（Expansion 不兼容或注册失败）"));
+        getLogger().info(" - MythicMobs: " + hookStatus("MythicMobs", "integrations.mythicmobs",
+                hasAvailableItemProvider("mythicmobs"), "ItemProvider", "未挂钩（物品 API 不兼容）"));
+        getLogger().info(" - AttributePlus: " + hookStatus("AttributePlus", "integrations.attributeplus.enabled",
+                api.getAttributes().isAvailable(), api.getAttributes().getProviderName(), "未挂钩（API 不兼容或 PlaceholderAPI 不可用）"));
+        getLogger().info(" - DragonCore: " + hookStatus("DragonCore", "integrations.dragoncore.enabled",
+                api.getClientBridge().isAvailable(), api.getClientBridge().getProviderName(), "未挂钩（客户端 API 不兼容）"));
+    }
+
+    private String hookStatus(String pluginName, String configPath, boolean hooked,
+                              String providerName, String unavailableReason) {
+        if (!getConfig().getBoolean(configPath, true)) return "配置关闭";
+        Plugin dependency = Bukkit.getPluginManager().getPlugin(pluginName);
+        if (dependency == null) return "未安装";
+        if (!dependency.isEnabled()) return "插件未启用";
+        if (hooked) {
+            String label = shortProviderName(providerName);
+            return label.isEmpty() ? "已挂钩" : "已挂钩（" + label + "）";
+        }
+        return unavailableReason;
+    }
+
+    private String shortProviderName(String providerName) {
+        if (providerName == null) return "";
+        String trimmed = providerName.trim();
+        if (trimmed.isEmpty() || "unavailable".equalsIgnoreCase(trimmed)) return "";
+        int dot = trimmed.lastIndexOf('.');
+        return dot >= 0 && dot + 1 < trimmed.length() ? trimmed.substring(dot + 1) : trimmed;
+    }
+
+    private boolean hasAvailableItemProvider(String id) {
+        if (api == null || id == null) return false;
+        for (ItemProvider provider : api.getItems().getProviders()) {
+            if (id.equalsIgnoreCase(provider.getId()) && provider.isAvailable()) return true;
+        }
+        return false;
     }
 
     public static XyCorePlugin getInstance() {
