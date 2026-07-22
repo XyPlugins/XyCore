@@ -1,0 +1,21 @@
+name: XyCore
+version: '0.3.0'
+main: org.xyplugin.xycore.XyCorePlugin
+api-version: '1.12'
+author: XyPlugin
+description: RPG server core services and extension API
+softdepend: [Vault, PlaceholderAPI, MythicMobs, AttributePlus, DragonCore]
+
+commands:
+  xycore:
+    description: XyCore administration command
+    usage: /xycore <status|reload|modules|save|info>
+    aliases: [xyc]
+
+permissions:
+  xycore.admin:
+    description: Allows XyCore administration commands
+    default: op
+  xycore.worldprotect.bypass:
+    description: Bypass XyCore WorldProtect restrictions
+    default: op

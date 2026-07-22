@@ -1,0 +1,148 @@
+# ============================================================
+# WorldProtect 世界保护模块
+#
+# 开启方式：
+# 1. 打开 plugins/XyCore/config.yml
+# 2. 设置 modules.world-protect: true
+# 3. 使用 /xycore reload 或重启服务器
+#
+# 模块作用：
+# - 按世界禁止方块破坏、方块放置
+# - 禁止桶收回/放出流体或生物
+# - 禁止画、展示框等悬挂物放置/破坏
+# - 禁止展示框交互、盔甲架放置/破坏/交互
+# - 可选禁止踩踏耕地
+# ============================================================
+
+settings:
+  # 未单独写入 worlds: 的世界是否启用默认保护。
+  # false = 只有 worlds: 中 enabled: true 的世界才受保护。
+  # true  = 所有未单独配置的世界也会按 defaults: 管控。
+  default-enabled: false
+
+  # 全局绕过权限。拥有该权限的玩家不会受到 WorldProtect 限制。
+  bypass-permission: xycore.worldprotect.bypass
+
+  # OP 是否自动绕过保护。
+  # 正式服建议 false，然后用权限插件精确分配 bypass-permission。
+  op-bypass: false
+
+  # 是否给玩家发送拦截提示。
+  send-message: true
+
+  # 是否在提示前拼接插件前缀。
+  # true 时默认使用 config.yml -> messages.prefix。
+  use-prefix: true
+
+  # 模块前缀。
+  # {core_prefix} = 使用 config.yml 里的 messages.prefix。
+  # 想单独改本模块前缀，可以写成：'&7[&a保护&7]&r'
+  # 想完全不显示前缀，可以设置 use-prefix: false。
+  prefix: '{core_prefix}'
+
+  # 同一玩家同一类拦截提示的冷却，单位：毫秒。
+  # 防止玩家长按左键刷屏。
+  message-cooldown-ms: 800
+
+defaults:
+  # 默认规则。
+  # 如果 settings.default-enabled: true，未写入 worlds: 的世界会使用这里。
+  # 如果某个世界 inherit-defaults: true，该世界也会继承这里。
+  deny:
+    # 禁止破坏方块，对应 BlockBreakEvent。
+    block-break: false
+    # 禁止放置方块，对应 BlockPlaceEvent。
+    block-place: false
+    # 禁止空桶收回水/岩浆/鱼等，对应 PlayerBucketFillEvent。
+    bucket-fill: false
+    # 禁止水桶/岩浆桶/鱼桶放出，对应 PlayerBucketEmptyEvent。
+    bucket-empty: false
+    # 禁止破坏画、展示框等悬挂物。
+    hanging-break: false
+    # 禁止放置画、展示框等悬挂物。
+    hanging-place: false
+    # 禁止右键操作展示框里的物品。
+    item-frame-interact: false
+    # 禁止破坏盔甲架。
+    armor-stand-break: false
+    # 禁止放置盔甲架。
+    armor-stand-place: false
+    # 禁止右键操作盔甲架装备。
+    armor-stand-interact: false
+    # 禁止踩踏耕地。
+    crop-trample: false
+
+  messages:
+    # 支持颜色符号 &。
+    # 支持占位符：
+    # {world}  = 当前世界名
+    # {action} = 被拦截的动作类型，例如 block-break
+    #
+    # 当前默认显示效果：
+    # [XyCore]该世界无法破坏方块
+    block-break: '&c该世界无法破坏方块'
+    block-place: '&c该世界无法放置方块'
+    bucket-fill: '&c该世界无法使用桶收回流体或生物'
+    bucket-empty: '&c该世界无法使用桶放出流体或生物'
+    hanging-break: '&c该世界无法破坏悬挂物'
+    hanging-place: '&c该世界无法放置悬挂物'
+    item-frame-interact: '&c该世界无法操作展示框'
+    armor-stand-break: '&c该世界无法破坏盔甲架'
+    armor-stand-place: '&c该世界无法放置盔甲架'
+    armor-stand-interact: '&c该世界无法操作盔甲架'
+    crop-trample: '&c该世界无法踩踏耕地'
+
+worlds:
+  # 示例一：主世界保护配置。
+  # 把 world 改成你的实际世界名，例如 RPG、rpg_main、world 等。
+  world:
+    # true = 该世界启用保护。
+    # false = 该世界不启用保护，但配置会保留。
+    enabled: false
+
+    # 是否继承 defaults: 中的配置。
+    # true 时，本世界没有写到的 deny/messages 会使用 defaults。
+    inherit-defaults: true
+
+    # 该世界专属绕过权限。
+    # 留空则只使用 settings.bypass-permission。
+    bypass-permission: ''
+
+    deny:
+      block-break: true
+      block-place: true
+      bucket-fill: true
+      bucket-empty: true
+      hanging-break: true
+      hanging-place: true
+      item-frame-interact: true
+      armor-stand-break: true
+      armor-stand-place: true
+      armor-stand-interact: true
+      crop-trample: false
+
+    # 可以只覆盖自己想改的提示，不需要把 messages 全部写一遍。
+    messages:
+      block-break: '&c该世界无法破坏方块'
+      block-place: '&c该世界无法放置方块'
+
+  # 示例二：资源世界只禁止建筑，但允许桶和展示框。
+  resource_world:
+    enabled: false
+    inherit-defaults: true
+    bypass-permission: xycore.worldprotect.resource.bypass
+    deny:
+      block-break: true
+      block-place: true
+      bucket-fill: false
+      bucket-empty: false
+      hanging-break: false
+      hanging-place: false
+      item-frame-interact: false
+      armor-stand-break: false
+      armor-stand-place: false
+      armor-stand-interact: false
+      crop-trample: true
+    messages:
+      block-break: '&c资源世界当前禁止破坏方块'
+      block-place: '&c资源世界当前禁止放置方块'

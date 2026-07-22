@@ -1,0 +1,86 @@
+# ============================================================
+# WorldPermission 世界权限管控模块
+#
+# 开启方式：
+# 1. 打开 plugins/XyCore/config.yml
+# 2. 设置 modules.world-permission: true
+# 3. 使用 /xycore reload 或重启服务器
+#
+# 模块作用：
+# - 按世界临时给予或取消玩家权限
+# - 例如：家园世界给予 essentials.tpa / essentials.sethome
+# - 例如：副本世界不发放这些权限，所以玩家仍然无法使用 /tpa
+#
+# 推荐用法：
+# 先在权限插件或 EssentialsX 中不要给玩家全局 tpa/sethome 权限，
+# 再由本模块只在指定世界临时授予这些权限。
+# ============================================================
+
+settings:
+  # 未单独写入 worlds: 的世界是否启用默认权限规则。
+  # false = 只有 worlds: 中 enabled: true 的世界会发放权限。
+  # true  = 所有未单独配置的世界也会按 defaults: 发放权限。
+  default-enabled: false
+
+  # 玩家进服时是否刷新世界权限。
+  refresh-on-join: true
+
+  # 玩家切换世界时是否刷新世界权限。
+  refresh-on-world-change: true
+
+  # /xycore reload 时是否刷新所有在线玩家权限。
+  refresh-online-on-reload: true
+
+  # 玩家退出服务器时是否移除本模块发放的临时权限。
+  remove-on-quit: true
+
+  # OP 是否跳过临时权限发放。
+  # OP 通常已经拥有所有权限，正式服建议 true 或 false 都可以。
+  # false = 仍然给 OP 添加临时权限附件，方便测试。
+  op-bypass: false
+
+defaults:
+  # 默认规则。
+  # 如果 settings.default-enabled: true，未写入 worlds: 的世界会使用这里。
+  # 如果某个世界 inherit-defaults: true，该世界也会继承这里。
+  # 进入该世界时临时给予的权限。
+  grant-permissions: []
+
+  # 进入该世界时临时设置为 false 的权限。
+  # 通常用不到；如果玩家有全局权限，但你想在某个世界反向禁止，可以写这里。
+  # 同一个权限同时出现在 grant 和 deny 时，deny-permissions 优先。
+  deny-permissions: []
+
+worlds:
+  # 示例一：家园世界允许使用 tpa、sethome、home。
+  # 把 home_world 改成你的实际家园世界名。
+  home_world:
+    enabled: false
+    inherit-defaults: true
+    grant-permissions:
+      - essentials.tpa
+      - essentials.tpahere
+      - essentials.tpaccept
+      - essentials.tpdeny
+      - essentials.sethome
+      - essentials.home
+    deny-permissions: []
+
+  # 示例二：副本世界不发放任何传送权限。
+  # 如果玩家本来就没有全局 essentials.tpa，这里就会自然无法使用 /tpa。
+  dungeon_world:
+    enabled: false
+    inherit-defaults: true
+    grant-permissions: []
+    deny-permissions: []
+
+  # 示例三：如果你已经给了玩家全局 tpa，但希望副本世界强行禁止，可以这样写。
+  # 注意：更推荐不要全局给 tpa，而是只在 home_world grant。
+  dungeon_force_deny:
+    enabled: false
+    inherit-defaults: true
+    grant-permissions: []
+    deny-permissions:
+      - essentials.tpa
+      - essentials.tpahere
+      - essentials.sethome

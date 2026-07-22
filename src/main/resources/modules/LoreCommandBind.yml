@@ -1,0 +1,192 @@
+# ============================================================
+# LoreCommandBind 物品 Lore 指令绑定模块
+#
+# 开启方式：
+# 1. 打开 plugins/XyCore/config.yml
+# 2. 设置 modules.lore-command-bind: true
+# 3. 使用 /xycore reload 或重启服务器
+#
+# 模块作用：
+# 玩家点击带有指定 Lore 的物品时，执行服务端配置好的命令，
+# 或给玩家写入 AttributePlus 临时属性源。
+#
+# 安全说明：
+# - 命令只从本配置文件读取，不会从玩家可修改的 Lore 里读取命令。
+# - console/op 类命令风险较高，请只给可信规则使用。
+# - op: 写法默认关闭，需要手动开启 security.allow-temporary-op。
+# ============================================================
+
+settings:
+  # 是否忽略副手触发。1.12.2 双手事件容易重复触发，建议保持 true。
+  ignore-offhand: true
+
+  # 是否要求物品必须有 display name 才能触发。
+  # FishLore 原插件要求物品存在 display；这里默认 false，兼容更多自定义物品。
+  require-display-name: false
+
+  # 匹配 Lore 时是否忽略颜色。
+  strip-color: true
+
+  # 匹配 Lore 时是否去掉首尾空格。
+  trim: true
+
+  # 匹配 Lore 时是否忽略大小写。
+  ignore-case: false
+
+  # 是否对配置中的 Lore、命令和条件执行 PlaceholderAPI 变量替换。
+  # 未安装 PlaceholderAPI 时会自动跳过，不影响 Core 启动。
+  apply-placeholders: true
+
+  # 默认冷却时间，单位：毫秒。
+  # 单条规则可以用 execute.cooldown-ms 或 execute.cooldown-seconds 覆盖。
+  default-cooldown-ms: 500
+
+  # 默认触发动作。
+  # 可用值：
+  # LEFT_CLICK_AIR, RIGHT_CLICK_AIR, LEFT_CLICK_BLOCK, RIGHT_CLICK_BLOCK
+  actions:
+    - LEFT_CLICK_AIR
+    - RIGHT_CLICK_AIR
+    - LEFT_CLICK_BLOCK
+    - RIGHT_CLICK_BLOCK
+
+messages:
+  # 玩家没有规则权限时提示。
+  no-permission: '&c你没有权限使用这个物品。'
+
+  # 条件不满足时提示。
+  # 支持 {condition}、{actual}、{expected}。
+  condition-failed: '&c你没有满足这个物品的使用条件。'
+
+  # 冷却中提示。
+  # 支持 {seconds}。
+  cooldown: '&c请等待 &e{seconds}&c 秒后再使用。'
+
+security:
+  # 是否允许临时 OP 执行。
+  # 支持的写法：op:命令、[op] 命令、[temp_op] 命令。
+  # 默认 false，正式服强烈建议保持 false。
+  allow-temporary-op: false
+
+  # 控制台命令黑名单。
+  # 当 executor: CONSOLE 或 console: 前缀执行时，会拦截这些危险命令。
+  blocked-console-prefixes:
+    - op
+    - deop
+    - stop
+    - reload
+    - rl
+    - bukkit:reload
+    - minecraft:stop
+    - minecraft:op
+    - restart
+    - spigot:restart
+
+rules:
+  # 示例一：右键物品打开锻造菜单。
+  forge_menu:
+    # true = 启用该规则，false = 保留配置但不生效。
+    enabled: false
+
+    match:
+      # 需要匹配的 Lore 文本。
+      lore: '&e右键打开锻造台'
+
+      # 匹配模式：
+      # EXACT    = 某一行 Lore 必须完全等于 lore。
+      # CONTAINS = 某一行 Lore 包含 lore 即可。
+      mode: CONTAINS
+
+      # 限制物品材质。
+      # '*' 表示任意物品。
+      # 1.12.2 材质示例：DIAMOND, BOOK, PAPER, IRON_INGOT。
+      material: '*'
+
+      # 是否要求物品有 display name。
+      require-display-name: false
+
+    # 本规则允许哪些点击动作触发。
+    actions:
+      - RIGHT_CLICK_AIR
+      - RIGHT_CLICK_BLOCK
+
+    conditions:
+      # 使用该物品需要的权限。留空表示不检查权限。
+      permission: ''
+
+      # PlaceholderAPI 条件示例。
+      # operator 支持：>, >=, <, <=, =, !=, contains, !contains
+      placeholders:
+        player_level:
+          placeholder: '%player_level%'
+          operator: '>='
+          value: '1'
+          deny-message: '&c你的等级不足，无法使用这个物品。'
+
+    execute:
+      # 执行身份：
+      # PLAYER  = 玩家执行命令。
+      # CONSOLE = 控制台执行命令。
+      # TEMP_OP = 临时 OP 执行，默认被 security.allow-temporary-op 禁止。
+      executor: PLAYER
+
+      # 命令支持内置变量：
+      # {player}    玩家名
+      # {uuid}      玩家 UUID
+      # {world}     玩家所在世界
+      # {x} {y} {z} 玩家坐标
+      # {rule}      当前规则 ID
+      # {lore}      匹配到的 Lore 文本
+      # {display}   物品显示名
+      # {item_type} 物品材质
+      commands:
+        - 'xyforge open {player}'
+
+      # 触发后是否取消原版交互。
+      cancel-event: true
+
+      # 冷却时间，单位：毫秒。
+      cooldown-ms: 500
+
+      # 是否消耗手中物品 1 个。
+      consume: false
+
+  # 示例二：临时写入 AttributePlus 属性源。
+  attribute_test:
+    enabled: false
+    match:
+      lore: '&b临时获得暴击'
+      mode: CONTAINS
+    actions:
+      - RIGHT_CLICK_AIR
+      - RIGHT_CLICK_BLOCK
+    execute:
+      cancel-event: true
+      cooldown-seconds: 10
+      consume: false
+    attributes:
+      # 属性源 ID。再次触发同一 source 会覆盖并刷新持续时间。
+      source: 'xycore:lore:{rule}'
+
+      # 持续时间，单位：秒。小于等于 0 表示不自动移除。
+      duration-seconds: 10
+
+      # AttributePlus 属性行。
+      lines:
+        - '暴击几率: +10'
+
+# ------------------------------------------------------------
+# FishLore 旧配置兼容说明
+#
+# 如果本文件没有 rules: 或 binds: 节，XyCore 也会尝试读取根节点规则。
+# 例如：
+#
+# example1:
+#   match: '无需条件可以直接执行'
+#   take: true
+#   cooldown: 5
+#   commands:
+#     - 'console:say {player} 触发了物品'
+#
+# 推荐新配置仍使用 rules:，结构更清晰，也更适合长期维护。
+# ------------------------------------------------------------

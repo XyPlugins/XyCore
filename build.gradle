@@ -1,0 +1,58 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.xyplugin'
+version = '0.3.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'papermc-repo'
+        url = 'https://repo.papermc.io/repository/maven-public/'
+    }
+}
+
+sourceSets {
+    // 仅用于编译 XyCorePlaceholderExpansion，不会被打进最终插件 JAR。
+    papiStub {
+        java.srcDir 'src/stub/java'
+    }
+    main {
+        compileClasspath += papiStub.output
+    }
+}
+
+dependencies {
+    // 只在编译期使用 Paper API，运行时由 Paper 提供。
+    // 随源码附带 API JAR，保证离线也能复现构建。
+    compileOnly files('libs/paper-api-1.12.2-R0.1-SNAPSHOT.jar')
+    compileOnly files('libs/bungeecord-chat-1.12-SNAPSHOT.jar')
+    papiStubCompileOnly files('libs/paper-api-1.12.2-R0.1-SNAPSHOT.jar')
+
+    // DragonCore 2.6.2.9 内嵌的 HikariCP 4.0.3 与 SLF4J 1.7.30 子集。
+    implementation files('libs/HikariCP-4.0.3-slf4j-1.7.30.jar')
+}
+
+compileJava.dependsOn compilePapiStubJava
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+jar {
+    archiveFileName = "XyCore-${project.version}.jar"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'module-info.class'
+    manifest {
+        attributes('Implementation-Title': 'XyCore', 'Implementation-Version': project.version)
+    }
+}
