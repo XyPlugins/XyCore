@@ -77,7 +77,7 @@ plugins/XyCore/modules/world-permission.yml
 
 `LoreCommandBind` 是 0.3.0 重写后的 Lore 识别指令模块。
 
-它吸收了 FishLore 比较好用的部分：通过物品 Lore 匹配规则，触发玩家指令、后台指令、冷却、消耗物品、条件判断等效果。
+通过物品 Lore 匹配规则，触发玩家指令、后台指令、冷却、消耗物品、条件判断等效果。
 
 同时它修正了旧版本 LoreCommand 无法使用的问题，并加强了安全限制：
 
@@ -131,7 +131,7 @@ plugins/XyCore/modules/LoreCommandBind.yml
 
 ## WorldProtect 模块
 
-`WorldProtect` 是世界保护模块，用来替代轻量级 AntiBuildX 类功能。
+`WorldProtect` 是世界保护模块
 
 它可以按世界阻止：
 
