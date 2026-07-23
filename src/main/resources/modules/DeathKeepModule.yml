@@ -1,0 +1,5 @@
+## 开启死亡不掉落的世界
+DeathKeepModule:
+  # - world
+  # - dungeon_world
+  # - *

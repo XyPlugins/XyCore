@@ -49,7 +49,18 @@ public abstract class AbstractCoreModule implements CoreModule {
         loadConfig();
         if (!enabled) {
             enabled = true;
-            onEnable();
+            try {
+                onEnable();
+            } catch (Exception failure) {
+                enabled = false;
+                try {
+                    onDisable();
+                } catch (Exception cleanupFailure) {
+                    plugin.getLogger().warning(displayName + " 模块启用失败后的清理也失败: "
+                            + cleanupFailure.getMessage());
+                }
+                throw failure;
+            }
         } else {
             onReload();
         }

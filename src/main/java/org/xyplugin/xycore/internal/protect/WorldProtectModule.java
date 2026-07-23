@@ -76,6 +76,7 @@ public final class WorldProtectModule extends AbstractCoreModule implements List
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
+        if (!isEnabled()) return;
         WorldProtectRule rule = rule(event.getBlock().getWorld());
         if (!rule.enabled || !rule.blockBreak || bypass(event.getPlayer(), rule)) return;
         deny(event, event.getPlayer(), rule.messages.blockBreak, "block-break");
@@ -83,6 +84,7 @@ public final class WorldProtectModule extends AbstractCoreModule implements List
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
+        if (!isEnabled()) return;
         WorldProtectRule rule = rule(event.getBlock().getWorld());
         if (!rule.enabled || !rule.blockPlace || bypass(event.getPlayer(), rule)) return;
         deny(event, event.getPlayer(), rule.messages.blockPlace, "block-place");
@@ -90,6 +92,7 @@ public final class WorldProtectModule extends AbstractCoreModule implements List
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBucketFill(PlayerBucketFillEvent event) {
+        if (!isEnabled()) return;
         WorldProtectRule rule = rule(event.getBlockClicked().getWorld());
         if (!rule.enabled || !rule.bucketFill || bypass(event.getPlayer(), rule)) return;
         deny(event, event.getPlayer(), rule.messages.bucketFill, "bucket-fill");
@@ -97,6 +100,7 @@ public final class WorldProtectModule extends AbstractCoreModule implements List
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
+        if (!isEnabled()) return;
         WorldProtectRule rule = rule(event.getBlockClicked().getWorld());
         if (!rule.enabled || !rule.bucketEmpty || bypass(event.getPlayer(), rule)) return;
         deny(event, event.getPlayer(), rule.messages.bucketEmpty, "bucket-empty");
@@ -104,6 +108,7 @@ public final class WorldProtectModule extends AbstractCoreModule implements List
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onHangingPlace(HangingPlaceEvent event) {
+        if (!isEnabled()) return;
         WorldProtectRule rule = rule(event.getEntity().getWorld());
         if (!rule.enabled || !rule.hangingPlace || bypass(event.getPlayer(), rule)) return;
         deny(event, event.getPlayer(), rule.messages.hangingPlace, "hanging-place");
@@ -111,6 +116,7 @@ public final class WorldProtectModule extends AbstractCoreModule implements List
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onHangingBreak(HangingBreakEvent event) {
+        if (!isEnabled()) return;
         if (event instanceof HangingBreakByEntityEvent) return;
         WorldProtectRule rule = rule(event.getEntity().getWorld());
         if (!rule.enabled || !rule.hangingBreak) return;
@@ -119,6 +125,7 @@ public final class WorldProtectModule extends AbstractCoreModule implements List
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onHangingBreakByEntity(HangingBreakByEntityEvent event) {
+        if (!isEnabled()) return;
         WorldProtectRule rule = rule(event.getEntity().getWorld());
         if (!rule.enabled || !rule.hangingBreak) return;
         Player player = responsiblePlayer(event.getRemover());
@@ -128,6 +135,7 @@ public final class WorldProtectModule extends AbstractCoreModule implements List
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEntityDamage(EntityDamageByEntityEvent event) {
+        if (!isEnabled()) return;
         Entity target = event.getEntity();
         WorldProtectRule rule = rule(target.getWorld());
         if (!rule.enabled) return;
@@ -143,6 +151,7 @@ public final class WorldProtectModule extends AbstractCoreModule implements List
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInteractEntity(PlayerInteractEntityEvent event) {
+        if (!isEnabled()) return;
         Entity target = event.getRightClicked();
         WorldProtectRule rule = rule(target.getWorld());
         if (!rule.enabled || bypass(event.getPlayer(), rule)) return;
@@ -155,6 +164,7 @@ public final class WorldProtectModule extends AbstractCoreModule implements List
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onArmorStandManipulate(PlayerArmorStandManipulateEvent event) {
+        if (!isEnabled()) return;
         WorldProtectRule rule = rule(event.getRightClicked().getWorld());
         if (!rule.enabled || !rule.armorStandInteract || bypass(event.getPlayer(), rule)) return;
         deny(event, event.getPlayer(), rule.messages.armorStandInteract, "armor-stand-interact");
@@ -162,6 +172,7 @@ public final class WorldProtectModule extends AbstractCoreModule implements List
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent event) {
+        if (!isEnabled()) return;
         if (event.getAction() == Action.PHYSICAL) {
             Block block = event.getClickedBlock();
             if (block == null || !isFarmland(block.getType())) return;
@@ -276,7 +287,7 @@ public final class WorldProtectModule extends AbstractCoreModule implements List
     private void deny(org.bukkit.event.Cancellable event, Player player, String message, String key) {
         event.setCancelled(true);
         if (player == null || !getModuleConfig().getBoolean("settings.send-message", true)) return;
-        long cooldown = Math.max(0L, getModuleConfig().getLong("settings.message-cooldown-ms", 800L));
+        long cooldown = Math.max(0L, getModuleConfig().getLong("settings.message-cooldown-ms", 0L));
         String cooldownKey = player.getUniqueId() + ":" + key;
         Long last = messageCooldowns.get(cooldownKey);
         long now = System.currentTimeMillis();

@@ -41,8 +41,8 @@ settings:
   prefix: '{core_prefix}'
 
   # 同一玩家同一类拦截提示的冷却，单位：毫秒。
-  # 防止玩家长按左键刷屏。
-  message-cooldown-ms: 800
+  # 0 = 每次拦截都提示；大于 0 时用于防止玩家长按左键刷屏。
+  message-cooldown-ms: 0
 
 defaults:
   # 默认规则。

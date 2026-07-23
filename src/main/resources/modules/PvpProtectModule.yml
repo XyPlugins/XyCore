@@ -1,0 +1,5 @@
+## 禁止PVP的世界
+PvpProtectModule:
+  # - world
+  # - dungeon_world
+  # - *

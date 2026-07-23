@@ -8,10 +8,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.xyplugin.xycore.XyCorePlugin;
 import org.xyplugin.xycore.api.data.PlayerSession;
+import org.xyplugin.xycore.internal.death.DeathKeepModule;
 import org.xyplugin.xycore.internal.lore.LoreCommandBindService;
 import org.xyplugin.xycore.internal.module.CoreModule;
 import org.xyplugin.xycore.internal.permission.WorldPermissionModule;
 import org.xyplugin.xycore.internal.protect.WorldProtectModule;
+import org.xyplugin.xycore.internal.time.AlwaysDayModule;
+import org.xyplugin.xycore.internal.weather.NoRainModule;
+import org.xyplugin.xycore.internal.pvp.PvpProtectModule;
 
 /** XyCore 管理命令。 */
 public final class CoreCommand implements CommandExecutor {
@@ -87,6 +91,14 @@ public final class CoreCommand implements CommandExecutor {
                 WorldPermissionModule worldPermission = (WorldPermissionModule) module;
                 extra = " &7世界: &f" + worldPermission.getWorldCount()
                         + " &7权限附件: &f" + worldPermission.getActiveAttachmentCount();
+            } else if (module instanceof DeathKeepModule) {
+                extra = " &7世界: &f" + ((DeathKeepModule) module).getWorldCount();
+            } else if (module instanceof PvpProtectModule) {
+                extra = " &7世界: &f" + ((PvpProtectModule) module).getWorldCount();
+            } else if (module instanceof AlwaysDayModule) {
+                extra = " &7世界: &f" + ((AlwaysDayModule) module).getWorldCount();
+            } else if (module instanceof NoRainModule) {
+                extra = " &7世界: &f" + ((NoRainModule) module).getWorldCount();
             }
             sender.sendMessage(color("&e" + module.getId() + " &7" + (module.isEnabled() ? "启用" : "关闭")
                     + " &8(" + module.getConfigResourcePath() + ")" + extra));
