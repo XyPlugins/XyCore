@@ -77,3 +77,11 @@ NoRainModule:
 - 不要把 DeathKeep、PVP、白天、天气逻辑塞回 WorldProtect；它们是独立模块。
 - 用户偏好配置直观，模块配置键名使用 `DeathKeepModule:`、`PvpProtectModule:`、`AlwaysDayModule:`、`NoRainModule:` 这种直接列表形式。
 - 如果改模块配置路径或键名，需要同步 README、AI_CHANGELOG 和默认配置文件。
+## 下次更新待修复
+
+### AlwaysDayModule 天空仍在变化
+
+- 现象：开启永远白天后，天空仍会缓慢变化，看起来像时间在推进后又被拉回白天。
+- 当前原因：AlwaysDayModule 目前通过定时调用 `world.setTime(6000)` 保持白天，不会输出 `/time set` 控制台命令，但日夜循环仍在运行。
+- 下次建议：改为在模块启用时对匹配世界设置 `doDaylightCycle=false` 并设置白天时间；模块关闭或世界移出列表时再考虑是否恢复原 gamerule 状态。
+- 用户要求：本次先只记录，不修改代码，等下次更新一起处理。
