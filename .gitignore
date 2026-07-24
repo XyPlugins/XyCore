@@ -1,0 +1,9 @@
+# Gradle 构建输出和本地缓存
+.gradle/
+.gradle-local/
+build/
+
+# 常见运行/调试临时文件
+run/
+logs/
+*.log

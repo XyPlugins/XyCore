@@ -95,6 +95,14 @@ public final class ModuleManager implements org.xyplugin.xycore.api.service.Relo
                 && plugin.getConfig().isSet("lore-command-bind.enabled")) {
             return plugin.getConfig().getBoolean("lore-command-bind.enabled");
         }
+
+        // 0.3.2 compatibility: four old world rule switches were merged into server-rules in 0.3.3.
+        if ("server-rules".equalsIgnoreCase(module.getId())) {
+            return plugin.getConfig().getBoolean("modules.death-keep", false)
+                    || plugin.getConfig().getBoolean("modules.pvp-protect", false)
+                    || plugin.getConfig().getBoolean("modules.always-day", false)
+                    || plugin.getConfig().getBoolean("modules.no-rain", false);
+        }
         return false;
     }
 }

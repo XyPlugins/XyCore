@@ -6,7 +6,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.xyplugin.xycore.api.XyCoreApi;
 import org.xyplugin.xycore.api.item.ItemProvider;
 import org.xyplugin.xycore.internal.CoreApiImpl;
-import org.xyplugin.xycore.internal.death.DeathKeepModule;
 import org.xyplugin.xycore.internal.command.CoreCommand;
 import org.xyplugin.xycore.internal.listener.CoreListener;
 import org.xyplugin.xycore.internal.lore.LoreCommandBindService;
@@ -14,10 +13,8 @@ import org.xyplugin.xycore.internal.module.CoreModule;
 import org.xyplugin.xycore.internal.module.ModuleManager;
 import org.xyplugin.xycore.internal.permission.WorldPermissionModule;
 import org.xyplugin.xycore.internal.placeholder.ModernPapiBridge;
-import org.xyplugin.xycore.internal.pvp.PvpProtectModule;
 import org.xyplugin.xycore.internal.protect.WorldProtectModule;
-import org.xyplugin.xycore.internal.time.AlwaysDayModule;
-import org.xyplugin.xycore.internal.weather.NoRainModule;
+import org.xyplugin.xycore.internal.rules.ServerRulesModule;
 
 /** XyCore Paper 1.12.2 插件入口。 */
 public final class XyCorePlugin extends JavaPlugin {
@@ -48,10 +45,7 @@ public final class XyCorePlugin extends JavaPlugin {
         moduleManager.register(new LoreCommandBindService(this));
         moduleManager.register(new WorldProtectModule(this));
         moduleManager.register(new WorldPermissionModule(this));
-        moduleManager.register(new DeathKeepModule(this));
-        moduleManager.register(new PvpProtectModule(this));
-        moduleManager.register(new AlwaysDayModule(this));
-        moduleManager.register(new NoRainModule(this));
+        moduleManager.register(new ServerRulesModule(this));
         api.getReloads().register(moduleManager);
         try {
             moduleManager.refreshConfiguredModules();

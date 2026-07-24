@@ -31,36 +31,21 @@ modules:
   # 开启后生成：plugins/XyCore/modules/world-permission.yml
   world-permission: false
 
-  # DeathKeepModule：死亡不掉落模块。
-  # 作用：按世界开启死亡不掉落，保留背包和经验。
-  # 开启后生成：plugins/XyCore/modules/DeathKeepModule.yml
-  death-keep: false
-
-  # PvpProtectModule：禁止 PVP 模块。
-  # 作用：按世界禁止玩家之间的直接和间接伤害。
-  # 开启后生成：plugins/XyCore/modules/PvpProtectModule.yml
-  pvp-protect: false
-
-  # AlwaysDayModule：永远白天模块。
-  # 作用：按世界保持白天。
-  # 开启后生成：plugins/XyCore/modules/AlwaysDayModule.yml
-  always-day: false
-
-  # NoRainModule：永远不下雨模块。
-  # 作用：按世界禁止下雨和雷暴。
-  # 开启后生成：plugins/XyCore/modules/NoRainModule.yml
-  no-rain: false
+  # ServerRules：服务器规则模块。
+  # 作用：统一管理死亡不掉落、禁止 PVP、接近天黑拉回白天、永不下雨等基础规则。
+  # 开启后生成：plugins/XyCore/modules/server-rules.yml
+  server-rules: false
 
   # Kit：礼包/新手包模块预留开关。
-  # 当前 0.3.2 暂未实现，开启也不会生成模块配置。
+  # 当前 0.3.3 暂未实现，开启也不会生成模块配置。
   kit: false
 
   # Nickname：昵称模块预留开关。
-  # 当前 0.3.2 暂未实现，后续可用于玩家昵称、称号显示等功能。
+  # 当前 0.3.3 暂未实现，后续可用于玩家昵称、称号显示等功能。
   nickname: false
 
   # Script：脚本模块预留开关。
-  # 当前 0.3.2 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
+  # 当前 0.3.3 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
   script: false
 
 storage:

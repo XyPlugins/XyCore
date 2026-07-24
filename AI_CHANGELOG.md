@@ -13,6 +13,71 @@
 - 模块开关位于：`src/main/resources/config.yml -> modules`
 - 模块默认配置位于：`src/main/resources/modules/`
 
+## v0.3.3 变更
+
+### ServerRules 合并
+
+- 将 0.3.2 新增的四个轻量规则模块合并为一个模块：
+  - `death-keep`
+  - `pvp-protect`
+  - `always-day`
+  - `no-rain`
+- 新模块 id：`server-rules`
+- 新模块类：`org.xyplugin.xycore.internal.rules.ServerRulesModule`
+- 新配置文件：`src/main/resources/modules/server-rules.yml`
+- 主配置只保留：
+
+```yaml
+modules:
+  server-rules: false
+```
+
+### ServerRules 配置约定
+
+- 用户希望这类基础规则集中在一个“服务器规则”配置里，不要生成四个零散 yml。
+- `server-rules.yml` 内部使用四个根节点世界列表；列表为空表示该规则不生效：
+
+```yaml
+death-keep:
+  - world
+
+pvp-protect:
+  - spawn
+
+always-day:
+  - world
+
+no-rain:
+  - world
+```
+
+- 世界列表支持 `'*'` 匹配所有已加载世界。
+- 注意 YAML 中 `*` 必须加引号写成 `'*'`，否则会被解析为 alias。
+- 这版暂时不要把 `enabled`、`worlds`、时间阈值等高级配置暴露给服主；用户明确希望先只写世界列表。
+
+### 0.3.2 兼容读取
+
+- `ModuleManager` 对 `server-rules` 做了 0.3.2 旧开关兼容：
+  - 如果 `modules.server-rules` 不存在，但旧配置里 `death-keep`、`pvp-protect`、`always-day`、`no-rain` 任意一个为 true，则启用 `server-rules`。
+- `ServerRulesModule` 会兼容读取旧配置文件：
+  - `modules/DeathKeepModule.yml`
+  - `modules/PvpProtectModule.yml`
+  - `modules/AlwaysDayModule.yml`
+  - `modules/NoRainModule.yml`
+- 如果 `server-rules.yml` 对应根节点列表为空，则临时读取旧世界列表让规则继续生效。
+- 不要自动写回 `server-rules.yml`，因为 Bukkit 1.12 的 `YamlConfiguration#save` 会丢失中文注释。
+- 不要自动删除旧配置，交给服主确认后手动删除，避免升级时误删仍在参考的文件。
+
+### AlwaysDay 天空变化修复
+
+- 0.3.2 的 AlwaysDay 每 20 ticks 执行 `world.setTime(6000)`，在材质包天空下会显得一直变化/抽动。
+- 0.3.3 改为阈值重置：
+  - 默认每 200 ticks 检查一次。
+  - 当世界时间达到 `11500` 后才设置回 `6000`。
+  - 平时不频繁 setTime，因此天空不会一直被硬拉。
+- 本次没有修改 `doDaylightCycle` gamerule，避免插件关闭后改变服务器持久世界规则。
+  如果未来用户明确要求“绝对冻结天空”，再增加可选配置而不是默认启用。
+
 ## v0.3.2 变更
 
 ### WorldProtect 修复
@@ -74,14 +139,7 @@ NoRainModule:
 
 ## 接手注意
 
-- 不要把 DeathKeep、PVP、白天、天气逻辑塞回 WorldProtect；它们是独立模块。
-- 用户偏好配置直观，模块配置键名使用 `DeathKeepModule:`、`PvpProtectModule:`、`AlwaysDayModule:`、`NoRainModule:` 这种直接列表形式。
+- 不要把 DeathKeep、PVP、白天、天气逻辑塞回 WorldProtect；它们现在属于 `ServerRulesModule`。
+- 用户偏好配置直观，但 0.3.3 起不要再为这些轻量规则生成四个独立 yml。
+- ServerRules 的配置应保持“一个 yml，四个根节点世界列表”的结构。
 - 如果改模块配置路径或键名，需要同步 README、AI_CHANGELOG 和默认配置文件。
-## 下次更新待修复
-
-### AlwaysDayModule 天空仍在变化
-
-- 现象：开启永远白天后，天空仍会缓慢变化，看起来像时间在推进后又被拉回白天。
-- 当前原因：AlwaysDayModule 目前通过定时调用 `world.setTime(6000)` 保持白天，不会输出 `/time set` 控制台命令，但日夜循环仍在运行。
-- 下次建议：改为在模块启用时对匹配世界设置 `doDaylightCycle=false` 并设置白天时间；模块关闭或世界移出列表时再考虑是否恢复原 gamerule 状态。
-- 用户要求：本次先只记录，不修改代码，等下次更新一起处理。
