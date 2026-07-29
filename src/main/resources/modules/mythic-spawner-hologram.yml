@@ -43,14 +43,35 @@ settings:
     # - build_world
 
 display:
+  # 世界名显示模式。
+  # alias = {world} 优先显示 Multiverse-Core 世界 alias；没有安装 MV 或没有 alias 时回退原世界名。
+  # raw   = {world} 固定显示 Bukkit 原世界名。
+  world-name-mode: alias
+
+  # 龙核血条兼容开关。
+  # true 时会把 {mob_name} 内部用不可见字符拆开，避免龙核 contains 匹配到完整怪物名。
+  # 视觉显示不变；如果你的龙核血条没有使用 contains 匹配，可以改为 false。
+  dragoncore-healthbar-guard: true
+
+  # 全息盔甲架碰撞兼容开关。
+  # true 时会尝试把 HolographicDisplays 生成的文字盔甲架设为 Marker，减少被客户端血条/准星识别。
+  armorstand-marker-guard: true
+
+  # 怪物已刷新/存活时是否隐藏整组全息。
+  # true = 存活时隐藏，怪物死亡进入冷却后再显示倒计时。
+  # false = 存活时仍显示全息，并让 {respawn} 显示 alive-text。
+  hide-while-mob-alive: true
+
   # 全息文本，从上到下排列；最多 8 行。
   # 可用变量：
-  # {world}    = 刷新点所在世界
-  # {spawner}  = MythicMobs 刷新点 ID
-  # {mob_id}   = MythicMobs 怪物内部 ID/类型配置
-  # {mob_name} = 怪物显示名
-  # {respawn}  = 存活状态、复活倒计时或即将刷新
-  # {killer}   = 上一任玩家击杀者；服务器重启后重置
+  # {world}       = 按 world-name-mode 显示世界名
+  # {world_alias} = Multiverse-Core 世界 alias；没有 alias 时回退原世界名
+  # {world_raw}   = Bukkit 原世界名
+  # {spawner}     = MythicMobs 刷新点 ID
+  # {mob_id}      = MythicMobs 怪物内部 ID/类型配置
+  # {mob_name}    = 怪物显示名
+  # {respawn}     = 存活状态、复活倒计时或即将刷新
+  # {killer}      = 上一任玩家击杀者；服务器重启后重置
   lines:
     - '&7当前世界: &f{world}'
     - '&c{mob_name}'

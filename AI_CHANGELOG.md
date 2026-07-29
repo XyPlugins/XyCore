@@ -15,6 +15,26 @@
 
 ## v0.3.6 变更
 
+### MythicSpawnerHologram 龙核血条兼容修复
+
+- 背景：龙核怪物血条配置使用 `contains: true` 且 `match` 中包含怪物名，例如 `赤牙獠猪`。
+- HolographicDisplays 文本行本质是带自定义名称的盔甲架；当全息第二行显示 `{mob_name}` 时，龙核会把这行文字识别为可显示血条的实体。
+- 原先只在整行前加不可见字符不能解决 `contains`，因为原始文本仍连续包含完整怪物名。
+- 当前实现中，`display.dragoncore-healthbar-guard: true` 会把 `{mob_name}` 内部插入零宽字符：
+  - 视觉仍显示为完整怪物名。
+  - 原始字符串不再连续包含 `match` 中的怪物名，从而避开龙核 `contains` 命中。
+- `display.armorstand-marker-guard: true` 会在创建 HD 全息后扫描附近对应文字盔甲架并尝试执行：
+  - `ArmorStand#setMarker(true)`
+  - `ArmorStand#setVisible(false)`
+  - `ArmorStand#setGravity(false)`
+- `display.hide-while-mob-alive: true` 会在刷新点怪物存活时删除整组全息，怪物死亡进入冷却后再重建倒计时全息。
+- `display.world-name-mode: alias` 让 `{world}` 优先显示 Multiverse-Core 世界 alias；未安装 MV 或 alias 为空时回退 Bukkit 原世界名。
+- 新增变量：
+  - `{world_alias}`：固定尝试读取 Multiverse-Core alias。
+  - `{world_raw}`：固定显示 Bukkit 原世界名。
+- `plugin.yml` 新增 `Multiverse-Core` softdepend，用于加载顺序；运行时仍通过反射读取，不引入编译依赖。
+- 旧服已生成的 `modules/mythic-spawner-hologram.yml` 不会被自动覆盖，但上述新配置都有代码默认值，缺少节点时仍按新行为运行。
+
 ### ItemNameDisplay 模块
 
 - 新模块 id：`item-name-display`

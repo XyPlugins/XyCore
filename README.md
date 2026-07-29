@@ -339,6 +339,14 @@ MythicMobs 4.11.x
 HolographicDisplays 2.x
 ```
 
+可选插件：
+
+```text
+Multiverse-Core
+```
+
+安装 Multiverse-Core 时，默认 `{world}` 会优先显示世界 alias；没有 alias 或未安装 Multiverse-Core 时回退 Bukkit 原世界名。
+
 当前已针对用户提供的 `HolographicDisplays 2.2.6` 完成 API 兼容核对。
 
 本模块直接更新 HolographicDisplays 文本行，不经过 PlaceholderAPI，因此不要求安装：
@@ -360,6 +368,10 @@ settings:
   excluded-worlds: []
 
 display:
+  world-name-mode: alias
+  dragoncore-healthbar-guard: true
+  armorstand-marker-guard: true
+  hide-while-mob-alive: true
   lines:
     - '&7当前世界: &f{world}'
     - '&c{mob_name}'
@@ -375,7 +387,7 @@ name-overrides:
 
 模块每秒更新状态文字，每 5 秒检查刷新点是否新增、移动或删除。执行 MythicMobs 重载后会自动重建索引和全息，不需要手动重新创建。
 
-`{mob_name}` 优先读取 `name-overrides`，其次读取 MythicMobs 的怪物显示名，最后回退到怪物内部 ID。`{killer}` 只记录玩家击杀，环境或其他怪物造成的死亡不会覆盖上一名玩家；当前记录保存在内存中，服务器重启后显示为“暂无”。
+`{world}` 受 `display.world-name-mode` 控制，默认 `alias` 会优先读取 Multiverse-Core alias；`{world_alias}` 固定尝试显示 MV alias，`{world_raw}` 固定显示 Bukkit 原世界名。`{mob_name}` 优先读取 `name-overrides`，其次读取 MythicMobs 的怪物显示名，最后回退到怪物内部 ID。`display.dragoncore-healthbar-guard` 默认开启，会把 `{mob_name}` 内部用不可见字符拆开，避免龙核血条的 `contains` 匹配命中完整怪物名。`display.armorstand-marker-guard` 默认开启，会尝试把 HolographicDisplays 文字盔甲架设为 Marker，减少被客户端血条或准星选中。`display.hide-while-mob-alive` 默认开启，刷新点怪物存活时隐藏整组全息，怪物死亡进入冷却后再显示倒计时。`{killer}` 只记录玩家击杀，环境或其他怪物造成的死亡不会覆盖上一名玩家；当前记录保存在内存中，服务器重启后显示为“暂无”。
 
 ## ItemNameDisplay 掉落物名称模块
 
