@@ -343,6 +343,9 @@ public final class MythicSpawnerHologramModule extends AbstractCoreModule {
         String respawn;
         if (mythic.getMobCount(entry.info.handle) > 0) {
             respawn = aliveText;
+        } else if (mythic.isOnWarmup(entry.info.handle)) {
+            int seconds = mythic.getRemainingWarmupSeconds(entry.info.handle);
+            respawn = seconds > 0 ? formatTime(seconds) : readyText;
         } else if (mythic.isOnCooldown(entry.info.handle)) {
             int seconds = mythic.getRemainingSeconds(entry.info.handle);
             respawn = seconds > 0 ? formatTime(seconds) : readyText;

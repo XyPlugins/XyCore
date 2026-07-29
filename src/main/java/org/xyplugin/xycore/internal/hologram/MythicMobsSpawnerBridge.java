@@ -35,6 +35,8 @@ final class MythicMobsSpawnerBridge {
     private final Method getSpawnerMobCount;
     private final Method isSpawnerOnCooldown;
     private final Method getRemainingCooldownSeconds;
+    private final Method isSpawnerOnWarmup;
+    private final Method getRemainingWarmupSeconds;
 
     private final Class<? extends Event> spawnEventType;
     private final Class<? extends Event> deathEventType;
@@ -86,6 +88,8 @@ final class MythicMobsSpawnerBridge {
         this.isSpawnerOnCooldown = spawnerType.getMethod("isOnCooldown");
         this.getRemainingCooldownSeconds =
                 spawnerType.getMethod("getRemainingCooldownSeconds");
+        this.isSpawnerOnWarmup = spawnerType.getMethod("isOnWarmup");
+        this.getRemainingWarmupSeconds = spawnerType.getMethod("getRemainingWarmupSeconds");
 
         this.spawnEventType = (Class<? extends Event>) load(loader,
                 "io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobSpawnEvent");
@@ -129,6 +133,14 @@ final class MythicMobsSpawnerBridge {
 
     int getRemainingSeconds(Object spawner) throws ReflectiveOperationException {
         return Math.max(0, number(invoke(getRemainingCooldownSeconds, spawner)).intValue());
+    }
+
+    boolean isOnWarmup(Object spawner) throws ReflectiveOperationException {
+        return Boolean.TRUE.equals(invoke(isSpawnerOnWarmup, spawner));
+    }
+
+    int getRemainingWarmupSeconds(Object spawner) throws ReflectiveOperationException {
+        return Math.max(0, number(invoke(getRemainingWarmupSeconds, spawner)).intValue());
     }
 
     Object getSpawnEventSpawner(Event event) throws ReflectiveOperationException {

@@ -27,12 +27,13 @@
   - `ArmorStand#setMarker(true)`
   - `ArmorStand#setVisible(false)`
   - `ArmorStand#setGravity(false)`
-- `display.hide-while-mob-alive: true` 会在刷新点怪物存活时删除整组全息，怪物死亡进入冷却后再重建倒计时全息。
+- `display.hide-while-mob-alive: true` 会在刷新点怪物存活时删除整组全息，怪物死亡进入 Warmup/Cooldown 后再重建倒计时全息。
 - `display.world-name-mode: alias` 让 `{world}` 优先显示 Multiverse-Core 世界 alias；未安装 MV 或 alias 为空时回退 Bukkit 原世界名。
 - 新增变量：
   - `{world_alias}`：固定尝试读取 Multiverse-Core alias。
   - `{world_raw}`：固定显示 Bukkit 原世界名。
 - `plugin.yml` 新增 `Multiverse-Core` softdepend，用于加载顺序；运行时仍通过反射读取，不引入编译依赖。
+- `{respawn}` 在无存活怪物时优先显示 `isOnWarmup/getRemainingWarmupSeconds`，其次显示 `isOnCooldown/getRemainingCooldownSeconds`，用于配合 `Cooldown: 1`、`Warmup: 60` 这类近似死亡后复活的配置。
 - 旧服已生成的 `modules/mythic-spawner-hologram.yml` 不会被自动覆盖，但上述新配置都有代码默认值，缺少节点时仍按新行为运行。
 
 ### ItemNameDisplay 模块
@@ -120,7 +121,7 @@ display:
 
 - 支持 `{world}`、`{spawner}`、`{mob_id}`、`{mob_name}`、`{respawn}`、`{killer}`。
 - `{mob_name}` 的优先级：`name-overrides` > 最近一次实际生成怪物显示名 > MM 怪物 Display > 内部 ID。
-- 刷新点仍有关联怪物时 `{respawn}` 显示 `alive-text`；没有怪物且处于冷却时显示剩余时间；否则显示 `ready-text`。
+- 刷新点仍有关联怪物时 `{respawn}` 显示 `alive-text`；没有怪物时优先显示 Warmup 剩余时间，其次显示 Cooldown 剩余时间；否则显示 `ready-text`。
 - 默认最多 8 行，间隔最小 20 ticks，防止配置错误制造高频更新。
 
 ## v0.3.3 变更

@@ -54,7 +54,9 @@ Bukkit 1.12 的 `YamlConfiguration#save` 会丢失注释，不要为了写回配
 - 龙核配置常见写法是 `match` 加 `contains: true`，会匹配 HolographicDisplays 文字盔甲架的 custom name。
 - `display.dragoncore-healthbar-guard: true` 会把 `{mob_name}` 内部用零宽字符拆开，视觉不变，但原始字符串不再连续包含怪物名。
 - `display.armorstand-marker-guard: true` 会尝试把 HD 文字盔甲架设为 Marker，减少被准星或客户端血条选中。
-- `display.hide-while-mob-alive: true` 会在刷新点怪物存活时隐藏整组全息，死亡进入冷却后再显示。
+- `display.hide-while-mob-alive: true` 会在刷新点怪物存活时隐藏整组全息，死亡进入 Warmup/Cooldown 后再显示。
+
+- `{respawn}` 在无存活怪物时必须优先读取 Warmup 剩余时间，其次读取 Cooldown 剩余时间，避免使用 `Cooldown: 1`、`Warmup: 60` 时全息显示为即将刷新。
 
 世界名：
 

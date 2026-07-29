@@ -58,7 +58,7 @@ display:
   armorstand-marker-guard: true
 
   # 怪物已刷新/存活时是否隐藏整组全息。
-  # true = 存活时隐藏，怪物死亡进入冷却后再显示倒计时。
+  # true = 存活时隐藏，怪物死亡进入 Warmup/Cooldown 后再显示倒计时。
   # false = 存活时仍显示全息，并让 {respawn} 显示 alive-text。
   hide-while-mob-alive: true
 
@@ -70,8 +70,9 @@ display:
   # {spawner}     = MythicMobs 刷新点 ID
   # {mob_id}      = MythicMobs 怪物内部 ID/类型配置
   # {mob_name}    = 怪物显示名
-  # {respawn}     = 存活状态、复活倒计时或即将刷新
+  # {respawn}     = 存活状态；无存活怪物时优先读取 Warmup 预热剩余时间，再读取 Cooldown 冷却剩余时间；都没有则显示即将刷新
   # {killer}      = 上一任玩家击杀者；服务器重启后重置
+  # 例如使用 Cooldown: 1 + Warmup: 60 时，{respawn} 显示的就是 Warmup 预热倒计时。
   lines:
     - '&7当前世界: &f{world}'
     - '&c{mob_name}'
