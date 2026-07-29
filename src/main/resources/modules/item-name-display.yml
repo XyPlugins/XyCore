@@ -1,0 +1,53 @@
+# ============================================================
+# ItemNameDisplay 掉落物名称显示模块
+#
+# 开启方式：
+# 1. 打开 plugins/XyCore/config.yml
+# 2. 设置 modules.item-name-display: true
+# 3. 使用 /xycore reload 或重启服务器
+#
+# 模块作用：
+# - 直接使用掉落物实体显示一行物品名称
+# - 支持 &0-&f 颜色、&k-&o 格式和 &r 重置代码
+# - 保留 MythicMobs/RPG 物品原有的彩色 Display 名称
+#
+# 性能说明：
+# - 不创建盔甲架或全息实体
+# - 不启动周期任务，不循环扫描世界实体
+# - 只在物品生成、区块加载和模块重载时处理
+#
+# 版本限制：
+# - Minecraft 1.12.2 客户端不支持 &#RRGGBB 真彩色代码
+# ============================================================
+
+# 启用名称显示的世界，不区分大小写。
+# '*' 表示所有世界；注意 YAML 中星号必须带引号。
+worlds:
+  - '*'
+  # - world
+  # - dungeon_world
+
+display:
+  # 显示格式。
+  # {name}     = ItemStack 的自定义显示名，或 material-names 中的名称
+  # {material} = 1.12.2 Material ID，例如 DIAMOND_SWORD
+  # 示例：'&7[掉落] &f{name}'
+  format: '{name}'
+
+  # true = 只显示拥有自定义 Display 名称的物品，推荐 RPG 服务器使用。
+  # MythicMobs 物品一般已有自定义名称，因此可以直接显示。
+  # false = 普通原版物品也显示；名称优先读取下方 material-names。
+  custom-name-only: true
+
+  # 是否覆盖其他插件已经设置的“掉落物实体名称”。
+  # 这和 ItemStack 自身的 Display 名称不是一回事。
+  # 正式服建议保持 false，避免与其他掉落物插件争夺显示控制权。
+  overwrite-existing-entity-name: false
+
+# 普通原版物品名称映射。
+# 仅在 display.custom-name-only: false 时使用。
+# 未配置的材料会直接显示 1.12.2 Material ID。
+material-names:
+  # DIAMOND: '&b钻石'
+  # IRON_INGOT: '&f铁锭'
+  # GOLD_INGOT: '&6金锭'

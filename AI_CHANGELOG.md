@@ -13,6 +13,39 @@
 - 模块开关位于：`src/main/resources/config.yml -> modules`
 - 模块默认配置位于：`src/main/resources/modules/`
 
+## v0.3.6 变更
+
+### ItemNameDisplay 模块
+
+- 新模块 id：`item-name-display`
+- 实现类：`org.xyplugin.xycore.internal.itemdisplay.ItemNameDisplayModule`
+- 默认配置：`src/main/resources/modules/item-name-display.yml`
+- 主开关：
+
+```yaml
+modules:
+  item-name-display: false
+```
+
+### 行为约定
+
+- 默认 `display.custom-name-only: true`，只显示 ItemStack 自带 Display 名称的 RPG/MM 物品。
+- `display.custom-name-only: false` 时，普通物品优先读取 `material-names`，未配置时显示 1.12.2 Material ID。
+- `display.overwrite-existing-entity-name: false` 是安全默认值，不与其他掉落物插件争夺实体名称。
+- 支持 `{name}` 与 `{material}`，支持传统 `&` 颜色和格式代码。
+- 不要宣称支持 `&#RRGGBB`；Minecraft 1.12.2 客户端协议没有 RGB 文字颜色。
+- 模块关闭或重载时，只恢复仍由 XyCore 管理且未被其他插件再次修改的名称。
+
+### 性能与实现约定
+
+- 直接调用掉落物实体的 `setCustomName` 与 `setCustomNameVisible`，不要改成盔甲架全息。
+- 不创建周期任务，不维护不断增长的掉落物 Map，不按玩家或掉落物循环扫描世界实体。
+- `ItemSpawnEvent` 只处理新物品；`ChunkLoadEvent` 只处理该区块中的物品。
+- 模块启用、重载和关闭时允许一次性遍历当前已加载实体，用于应用或恢复名称。
+- 使用 Bukkit Metadata 保存原名称、原可见状态和 XyCore 应用的名称，实体销毁时由 Bukkit 一同释放。
+- 如果发现实体名称已不等于 XyCore 上次应用的名称，说明其他插件后来接管，XyCore 必须放弃管理且不能在重载时覆盖。
+- 本模块不依赖 MythicMobs、HolographicDisplays、HolographicExtension、PlaceholderAPI 或 ProtocolLib。
+
 ## v0.3.5 变更
 
 ### MythicSpawnerHologram 模块

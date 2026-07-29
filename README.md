@@ -1,4 +1,4 @@
-# XyCore 0.3.5
+# XyCore 0.3.6
 
 XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核心插件。
 
@@ -17,13 +17,14 @@ XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核�
 - DragonCore GUI、按键、变量、客户端数据包桥接。
 - 原版物品与 MythicMobs 物品库软桥接。
 - MythicMobs 刷怪点自动全息显示。
+- 无额外实体、无周期任务的掉落物彩色名称显示。
 - 可开关的内置模块系统。
 
 职业等级、职业经验、锻造配方、技能、专精徽章、符文雕刻等具体玩法，建议交给独立插件实现。XyCore 只提供底座、接口和公共能力。
 
 ## 快速使用
 
-1. 将 `XyCore-0.3.5.jar` 放入 `plugins` 文件夹。
+1. 将 `XyCore-0.3.6.jar` 放入 `plugins` 文件夹。
 2. 启动服务器生成 `plugins/XyCore/config.yml`。
 3. 在 `config.yml` 中开启需要的模块。
 4. 使用 `/xycore reload` 或重启服务器。
@@ -69,16 +70,22 @@ modules:
   # 开启后生成：plugins/XyCore/modules/mythic-spawner-hologram.yml
   mythic-spawner-hologram: false
 
+  # ItemNameDisplay：轻量掉落物名称显示模块。
+  # 作用：直接使用掉落物实体显示彩色物品名，不创建盔甲架、不启动周期任务。
+  # 默认只显示拥有自定义名称的 MythicMobs/RPG 物品。
+  # 开启后生成：plugins/XyCore/modules/item-name-display.yml
+  item-name-display: false
+
   # Kit：礼包/新手包模块预留开关。
-  # 当前 0.3.5 暂未实现，开启也不会生成模块配置。
+  # 当前 0.3.6 暂未实现，开启也不会生成模块配置。
   kit: false
 
   # Nickname：昵称模块预留开关。
-  # 当前 0.3.5 暂未实现，后续可用于玩家昵称、称号显示等功能。
+  # 当前 0.3.6 暂未实现，后续可用于玩家昵称、称号显示等功能。
   nickname: false
 
   # Script：脚本模块预留开关。
-  # 当前 0.3.5 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
+  # 当前 0.3.6 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
   script: false
 ```
 
@@ -97,6 +104,7 @@ plugins/XyCore/modules/world-protect.yml
 plugins/XyCore/modules/world-permission.yml
 plugins/XyCore/modules/server-rules.yml
 plugins/XyCore/modules/mythic-spawner-hologram.yml
+plugins/XyCore/modules/item-name-display.yml
 ```
 
 可使用以下命令查看模块状态：
@@ -369,6 +377,47 @@ name-overrides:
 
 `{mob_name}` 优先读取 `name-overrides`，其次读取 MythicMobs 的怪物显示名，最后回退到怪物内部 ID。`{killer}` 只记录玩家击杀，环境或其他怪物造成的死亡不会覆盖上一名玩家；当前记录保存在内存中，服务器重启后显示为“暂无”。
 
+## ItemNameDisplay 掉落物名称模块
+
+开启 `modules.item-name-display` 后，XyCore 会直接使用掉落物实体本身显示一行物品名称。该模块不会为物品生成盔甲架，也没有每 tick 或每秒执行的周期任务。
+
+默认配置只显示拥有自定义 Display 名称的物品，适合 MythicMobs 装备、材料、图纸等 RPG 物品：
+
+```yaml
+worlds:
+  - '*'
+
+display:
+  format: '{name}'
+  custom-name-only: true
+  overwrite-existing-entity-name: false
+
+material-names:
+  # DIAMOND: '&b钻石'
+  # IRON_INGOT: '&f铁锭'
+```
+
+可用变量：
+
+```text
+{name}     ItemStack 自定义显示名，或 material-names 中配置的名称
+{material} Paper 1.12.2 Material ID，例如 DIAMOND_SWORD
+```
+
+支持 `&0` 至 `&f` 传统颜色、`&k` 至 `&o` 格式和 `&r` 重置。Minecraft 1.12.2 客户端协议不支持真正的 `&#RRGGBB` 颜色。
+
+模块默认不会覆盖其他插件已经设置的掉落物实体名称。模块重载或关闭时，会恢复当前已加载物品在 XyCore 接管前的名称和可见状态。
+
+性能流程只有以下三种事件入口：
+
+```text
+ItemSpawnEvent -> 处理新生成的掉落物
+ChunkLoadEvent -> 处理随区块载入的掉落物
+/xycore reload -> 一次性刷新当前已加载的掉落物
+```
+
+没有 HolographicDisplays、HolographicExtension、PlaceholderAPI 或 ProtocolLib 依赖。
+
 ## 软依赖说明
 
 以下插件都是软依赖：
@@ -415,6 +464,17 @@ HolographicDisplays
 `/xycore reload` 不等于 Bukkit `/reload`，它只处理 XyCore 和已注册的可重载服务。
 
 ## 版本记录
+
+### 0.3.6
+
+- 新增 `item-name-display` 可选模块。
+- 直接使用 Paper 1.12.2 掉落物实体显示单行彩色物品名称。
+- 默认只显示拥有自定义 Display 名称的 MythicMobs/RPG 物品。
+- 支持按世界启用、名称格式、原版材料名称映射和实体名称覆盖策略。
+- 支持 1.12.2 传统 `&` 颜色及格式代码，并明确不声明 RGB 真彩色支持。
+- 不创建盔甲架或全息实体，不使用周期任务或周期性世界扫描。
+- 使用 Bukkit Metadata 区分 XyCore 管理的名称，避免重载时覆盖其他插件后续修改的名称。
+- 模块关闭或重载时恢复当前已加载物品的原名称与可见状态。
 
 ### 0.3.5
 
@@ -526,5 +586,5 @@ gradlew.bat clean build
 输出文件：
 
 ```text
-build/libs/XyCore-0.3.5.jar
+build/libs/XyCore-0.3.6.jar
 ```

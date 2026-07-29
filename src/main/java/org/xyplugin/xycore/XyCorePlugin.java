@@ -8,6 +8,7 @@ import org.xyplugin.xycore.api.item.ItemProvider;
 import org.xyplugin.xycore.internal.CoreApiImpl;
 import org.xyplugin.xycore.internal.command.CoreCommand;
 import org.xyplugin.xycore.internal.hologram.MythicSpawnerHologramModule;
+import org.xyplugin.xycore.internal.itemdisplay.ItemNameDisplayModule;
 import org.xyplugin.xycore.internal.listener.CoreListener;
 import org.xyplugin.xycore.internal.lore.LoreCommandBindService;
 import org.xyplugin.xycore.internal.module.CoreModule;
@@ -48,6 +49,7 @@ public final class XyCorePlugin extends JavaPlugin {
         moduleManager.register(new WorldPermissionModule(this));
         moduleManager.register(new ServerRulesModule(this));
         moduleManager.register(new MythicSpawnerHologramModule(this));
+        moduleManager.register(new ItemNameDisplayModule(this));
         api.getReloads().register(moduleManager);
         try {
             moduleManager.refreshConfiguredModules();
