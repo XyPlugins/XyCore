@@ -1,4 +1,4 @@
-# XyCore 0.3.6
+# XyCore 0.3.9
 
 XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核心插件。
 
@@ -17,6 +17,7 @@ XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核�
 - DragonCore GUI、按键、变量、客户端数据包桥接。
 - 原版物品与 MythicMobs 物品库软桥接。
 - MythicMobs 刷怪点自动全息显示。
+- MythicMobs 已加载刷新点一键粘贴到玩家脚下。
 - 无额外实体、无周期任务的掉落物彩色名称显示。
 - 可开关的内置模块系统。
 
@@ -24,7 +25,7 @@ XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核�
 
 ## 快速使用
 
-1. 将 `XyCore-0.3.6.jar` 放入 `plugins` 文件夹。
+1. 将 `XyCore-0.3.9.jar` 放入 `plugins` 文件夹。
 2. 启动服务器生成 `plugins/XyCore/config.yml`。
 3. 在 `config.yml` 中开启需要的模块。
 4. 使用 `/xycore reload` 或重启服务器。
@@ -77,15 +78,15 @@ modules:
   item-name-display: false
 
   # Kit：礼包/新手包模块预留开关。
-  # 当前 0.3.6 暂未实现，开启也不会生成模块配置。
+  # 当前 0.3.9 暂未实现，开启也不会生成模块配置。
   kit: false
 
   # Nickname：昵称模块预留开关。
-  # 当前 0.3.6 暂未实现，后续可用于玩家昵称、称号显示等功能。
+  # 当前 0.3.9 暂未实现，后续可用于玩家昵称、称号显示等功能。
   nickname: false
 
   # Script：脚本模块预留开关。
-  # 当前 0.3.6 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
+  # 当前 0.3.9 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
   script: false
 ```
 
@@ -462,7 +463,10 @@ HolographicDisplays
 /xycore reload
 /xycore save [all|player]
 /xycore info <player>
+/xycore mms paste <spawner>
 ```
+
+`/xy` 是 `/xycore` 的短别名，例如 `/xy mms paste cylz`。
 
 说明：
 
@@ -472,10 +476,22 @@ HolographicDisplays
 - `/xycore save all`：保存所有在线玩家数据。
 - `/xycore save <player>`：保存指定玩家数据。
 - `/xycore info <player>`：查看指定玩家的 Core 数据摘要。
+- `/xycore mms paste <spawner>`：把一个已加载的 MythicMobs 刷新点复制到玩家脚下，自动生成不重复的新刷新点 ID；找不到模板时提示“没有该刷新点位”。
 
 `/xycore reload` 不等于 Bukkit `/reload`，它只处理 XyCore 和已注册的可重载服务。
 
+`mms paste` 是内置管理命令，不需要开启模块。它调用 MythicMobs 4.11 自带的刷新点复制逻辑，新刷新点会由 MythicMobs 保存到自己的 Spawners 配置里，XyCore 不额外保存刷新点数据。
+
 ## 版本记录
+
+### 0.3.9
+
+- 新增内置命令 `/xycore mms paste <刷新点ID>`，可把 MythicMobs 已加载刷新点复制到玩家脚下。
+- `/xy` 现在是 `/xycore` 的短别名，例如 `/xy mms paste cylz`。
+- 粘贴刷新点时自动生成不重复的新刷新点 ID，数据仍由 MythicMobs 保存到自己的 Spawners 配置。
+- MythicSpawnerHologram 全息兼容龙核血条 `contains` 匹配，避免全息文字被血条吸附。
+- MythicSpawnerHologram 支持 Multiverse-Core 世界 alias、存活时隐藏全息、ArmorStand Marker 保护。
+- `{respawn}` 在没有存活怪物时优先显示 Warmup 预热剩余时间，其次显示 Cooldown 冷却剩余时间。
 
 ### 0.3.6
 
@@ -598,5 +614,5 @@ gradlew.bat clean build
 输出文件：
 
 ```text
-build/libs/XyCore-0.3.6.jar
+build/libs/XyCore-0.3.9.jar
 ```

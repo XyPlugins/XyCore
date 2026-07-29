@@ -2,6 +2,7 @@ package org.xyplugin.xycore.internal.command;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -10,6 +11,7 @@ import org.xyplugin.xycore.XyCorePlugin;
 import org.xyplugin.xycore.api.data.PlayerSession;
 import org.xyplugin.xycore.internal.lore.LoreCommandBindService;
 import org.xyplugin.xycore.internal.module.CoreModule;
+import org.xyplugin.xycore.internal.mythic.MythicSpawnerCopyBridge;
 import org.xyplugin.xycore.internal.permission.WorldPermissionModule;
 import org.xyplugin.xycore.internal.protect.WorldProtectModule;
 import org.xyplugin.xycore.internal.rules.ServerRulesModule;
@@ -50,6 +52,9 @@ public final class CoreCommand implements CommandExecutor {
                 return true;
             case "info":
                 info(sender, args);
+                return true;
+            case "mms":
+                mms(sender, args);
                 return true;
             default:
                 help(sender);
@@ -131,6 +136,50 @@ public final class CoreCommand implements CommandExecutor {
         sender.sendMessage(color("&7已加载模块: &f" + (session == null ? "[]" : session.getLoadedModules())));
     }
 
+    private void mms(CommandSender sender, String[] args) {
+        if (args.length < 3 || !"paste".equalsIgnoreCase(args[1])) {
+            sender.sendMessage(color("&e用法: /xycore mms paste <刷新点ID>"));
+            return;
+        }
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(color("&c该命令只能由玩家在游戏内使用。"));
+            return;
+        }
+
+        Player player = (Player) sender;
+        Location location = player.getLocation();
+        String sourceId = args[2];
+        try {
+            MythicSpawnerCopyBridge bridge = new MythicSpawnerCopyBridge();
+            String targetId = bridge.uniqueId(bridge.suggestedId(sourceId, location));
+            MythicSpawnerCopyBridge.CopyResult result = bridge.copy(sourceId, targetId, location);
+            switch (result) {
+                case SUCCESS:
+                    sender.sendMessage(color("&a已在脚下粘贴刷新点 &f" + targetId
+                            + " &7(模板: &f" + sourceId + "&7)。"));
+                    sender.sendMessage(color("&7位置: &f" + location.getWorld().getName()
+                            + " " + location.getBlockX()
+                            + " " + location.getBlockY()
+                            + " " + location.getBlockZ()));
+                    return;
+                case SOURCE_NOT_FOUND:
+                    sender.sendMessage(color("&c没有该刷新点位"));
+                    return;
+                case TARGET_EXISTS:
+                    sender.sendMessage(color("&c刷新点 ID 已存在，请换个位置或稍后重试。"));
+                    return;
+                default:
+                    sender.sendMessage(color("&c刷新点粘贴失败。"));
+                    return;
+            }
+        } catch (Exception failure) {
+            String message = failure.getMessage();
+            sender.sendMessage(color("&c刷新点粘贴失败: &7"
+                    + (message == null || message.trim().isEmpty()
+                    ? failure.getClass().getSimpleName() : message)));
+        }
+    }
+
     private void help(CommandSender sender) {
         sender.sendMessage(color("&b=== XyCore ==="));
         sender.sendMessage(color("&e/xycore status &7查看 Core 状态"));
@@ -138,6 +187,7 @@ public final class CoreCommand implements CommandExecutor {
         sender.sendMessage(color("&e/xycore modules &7查看模块状态"));
         sender.sendMessage(color("&e/xycore save [all|玩家] &7保存玩家数据"));
         sender.sendMessage(color("&e/xycore info <玩家> &7查看数据会话"));
+        sender.sendMessage(color("&e/xycore mms paste <刷新点ID> &7在脚下粘贴 MythicMobs 刷新点"));
     }
 
     private String color(String message) {

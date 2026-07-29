@@ -65,6 +65,21 @@ Bukkit 1.12 的 `YamlConfiguration#save` 会丢失注释，不要为了写回配
 - `{world_raw}` 固定显示 Bukkit 原世界名。
 - Multiverse-Core 通过反射读取，不添加编译依赖；`plugin.yml` 保留 softdepend。
 
+## MythicMobs 刷新点命令
+
+核心类：
+
+- `org.xyplugin.xycore.internal.command.CoreCommand`
+- `org.xyplugin.xycore.internal.mythic.MythicSpawnerCopyBridge`
+
+约定：
+
+- `/xycore mms paste <刷新点ID>` 和 `/xy mms paste <刷新点ID>` 是内置管理命令，不受模块开关控制。
+- 命令只能由玩家执行，因为目标坐标取玩家脚下位置。
+- 通过反射调用 MythicMobs 4.11 `SpawnerManager#copySpawner`，不要手写 MythicMobs Spawners yml。
+- 找不到源刷新点时必须返回“没有该刷新点位”。
+- 新刷新点 ID 由 XyCore 自动生成并避免重复；数据仍由 MythicMobs 保存，XyCore 不额外持久化刷新点。
+
 ## ItemNameDisplay
 
 核心类：`org.xyplugin.xycore.internal.itemdisplay.ItemNameDisplayModule`

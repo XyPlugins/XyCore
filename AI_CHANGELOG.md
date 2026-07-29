@@ -13,7 +13,17 @@
 - 模块开关位于：`src/main/resources/config.yml -> modules`
 - 模块默认配置位于：`src/main/resources/modules/`
 
-## v0.3.6 变更
+## v0.3.9 变更
+
+### MythicMobs 刷新点粘贴命令
+
+- 新增内置命令 `/xycore mms paste <刷新点ID>`，`/xy` 是 `/xycore` 的短别名。
+- 该命令不依赖模块开关，只要求 MythicMobs 已启用且执行者是玩家。
+- 实现类：`org.xyplugin.xycore.internal.mythic.MythicSpawnerCopyBridge`
+- 通过反射调用 MythicMobs 4.11 的 `SpawnerManager#copySpawner(String, String, AbstractLocation)`，复制已加载刷新点到玩家脚下。
+- 新刷新点 ID 由 XyCore 按源刷新点、世界和坐标自动生成；若重复则追加序号。
+- 找不到源刷新点时返回“没有该刷新点位”。
+- 数据仍由 MythicMobs 保存到自身 Spawners 配置，XyCore 不额外持久化刷新点。
 
 ### MythicSpawnerHologram 龙核血条兼容修复
 
@@ -35,6 +45,8 @@
 - `plugin.yml` 新增 `Multiverse-Core` softdepend，用于加载顺序；运行时仍通过反射读取，不引入编译依赖。
 - `{respawn}` 在无存活怪物时优先显示 `isOnWarmup/getRemainingWarmupSeconds`，其次显示 `isOnCooldown/getRemainingCooldownSeconds`，用于配合 `Cooldown: 1`、`Warmup: 60` 这类近似死亡后复活的配置。
 - 旧服已生成的 `modules/mythic-spawner-hologram.yml` 不会被自动覆盖，但上述新配置都有代码默认值，缺少节点时仍按新行为运行。
+
+## v0.3.6 变更
 
 ### ItemNameDisplay 模块
 
