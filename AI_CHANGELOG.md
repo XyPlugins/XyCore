@@ -13,6 +13,63 @@
 - 模块开关位于：`src/main/resources/config.yml -> modules`
 - 模块默认配置位于：`src/main/resources/modules/`
 
+## v0.3.5 变更
+
+### MythicSpawnerHologram 模块
+
+- 新模块 id：`mythic-spawner-hologram`
+- 实现类：`org.xyplugin.xycore.internal.hologram.MythicSpawnerHologramModule`
+- MythicMobs 桥接：`org.xyplugin.xycore.internal.hologram.MythicMobsSpawnerBridge`
+- HolographicDisplays 桥接：`org.xyplugin.xycore.internal.hologram.HolographicDisplaysBridge`
+- 默认配置：`src/main/resources/modules/mythic-spawner-hologram.yml`
+- 主开关：
+
+```yaml
+modules:
+  mythic-spawner-hologram: false
+```
+
+### 依赖与兼容约定
+
+- 运行时需要 MythicMobs 4.11.x 和旧版 HolographicDisplays 2.x API。
+- 已核对用户实际使用的定制版：
+  `MythicMobs-4.11.0-da8c22c1-1.12.2-eventfix-cnhelp-final.jar`。
+- 已核对用户当前提供的 HolographicDisplays：`2.2.6`。
+- HolographicDisplays 使用旧包名：
+  `com.gmail.filoghost.holographicdisplays.api.*`。
+- 模块不依赖 HolographicExtension、PlaceholderAPI 或 ProtocolLib。
+- 两个桥接都缓存反射 Method；不要改回每次刷新都查找 Method 的实现。
+- 不把 MythicMobs/HolographicDisplays API JAR 打进 XyCore，保持软依赖隔离。
+- `plugin.yml` 必须保留 `HolographicDisplays` softdepend，以保证加载顺序。
+
+### 生命周期与性能约定
+
+- 模块启用时扫描全部刷新点并创建全息。
+- 默认每 20 ticks 更新一次状态文字，每 100 ticks 对比新增、移动和删除刷新点。
+- 监听 MythicMobSpawnEvent，用实际生成怪物的显示名刷新第二行。
+- 监听 MythicMobDeathEvent，通过 ActiveMob#getSpawner 关联刷新点，只记录玩家击杀者。
+- 监听 MythicReloadedEvent，延迟 2 ticks 重建全息和刷新点引用。
+- 所有 MM/HD 操作都必须保留在 Bukkit 主线程。
+- 每个全息持有独立 TextLine 句柄，只更新内容发生变化的行；不要每秒 clearLines/appendTextLine。
+- 模块关闭时必须注销动态事件、取消两个定时任务并删除全部由 XyCore 创建的全息。
+- `{killer}` 当前只保存在内存中，服务器重启后回到 `no-killer-text`，不要写入模块配置以免破坏中文注释。
+
+### 默认显示与变量
+
+```yaml
+display:
+  lines:
+    - '&7当前世界: &f{world}'
+    - '&c{mob_name}'
+    - '&e复活倒计时: &f{respawn}'
+    - '&7上一任击杀者: &f{killer}'
+```
+
+- 支持 `{world}`、`{spawner}`、`{mob_id}`、`{mob_name}`、`{respawn}`、`{killer}`。
+- `{mob_name}` 的优先级：`name-overrides` > 最近一次实际生成怪物显示名 > MM 怪物 Display > 内部 ID。
+- 刷新点仍有关联怪物时 `{respawn}` 显示 `alive-text`；没有怪物且处于冷却时显示剩余时间；否则显示 `ready-text`。
+- 默认最多 8 行，间隔最小 20 ticks，防止配置错误制造高频更新。
+
 ## v0.3.3 变更
 
 ### ServerRules 合并

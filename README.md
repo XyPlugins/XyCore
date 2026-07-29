@@ -1,4 +1,4 @@
-# XyCore 0.3.3
+# XyCore 0.3.5
 
 XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核心插件。
 
@@ -16,13 +16,14 @@ XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核�
 - AttributePlus 属性读取桥接与属性源直接写入/移除桥接。
 - DragonCore GUI、按键、变量、客户端数据包桥接。
 - 原版物品与 MythicMobs 物品库软桥接。
+- MythicMobs 刷怪点自动全息显示。
 - 可开关的内置模块系统。
 
 职业等级、职业经验、锻造配方、技能、专精徽章、符文雕刻等具体玩法，建议交给独立插件实现。XyCore 只提供底座、接口和公共能力。
 
 ## 快速使用
 
-1. 将 `XyCore-0.3.3.jar` 放入 `plugins` 文件夹。
+1. 将 `XyCore-0.3.5.jar` 放入 `plugins` 文件夹。
 2. 启动服务器生成 `plugins/XyCore/config.yml`。
 3. 在 `config.yml` 中开启需要的模块。
 4. 使用 `/xycore reload` 或重启服务器。
@@ -62,16 +63,22 @@ modules:
   # 开启后生成：plugins/XyCore/modules/server-rules.yml
   server-rules: false
 
+  # MythicSpawnerHologram：MythicMobs 刷怪点自动全息模块。
+  # 作用：自动显示世界、怪物名、复活倒计时和上一任玩家击杀者。
+  # 必需软依赖：MythicMobs、HolographicDisplays。
+  # 开启后生成：plugins/XyCore/modules/mythic-spawner-hologram.yml
+  mythic-spawner-hologram: false
+
   # Kit：礼包/新手包模块预留开关。
-  # 当前 0.3.3 暂未实现，开启也不会生成模块配置。
+  # 当前 0.3.5 暂未实现，开启也不会生成模块配置。
   kit: false
 
   # Nickname：昵称模块预留开关。
-  # 当前 0.3.3 暂未实现，后续可用于玩家昵称、称号显示等功能。
+  # 当前 0.3.5 暂未实现，后续可用于玩家昵称、称号显示等功能。
   nickname: false
 
   # Script：脚本模块预留开关。
-  # 当前 0.3.3 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
+  # 当前 0.3.5 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
   script: false
 ```
 
@@ -89,6 +96,7 @@ plugins/XyCore/modules/LoreCommandBind.yml
 plugins/XyCore/modules/world-protect.yml
 plugins/XyCore/modules/world-permission.yml
 plugins/XyCore/modules/server-rules.yml
+plugins/XyCore/modules/mythic-spawner-hologram.yml
 ```
 
 可使用以下命令查看模块状态：
@@ -305,6 +313,62 @@ plugins/XyCore/modules/NoRainModule.yml
 
 如果 `server-rules.yml` 对应规则列表还是空的，Core 会临时读取旧列表并让规则继续生效。为了保留 `server-rules.yml` 的中文注释，Core 不会自动写回配置；建议确认无误后手动把旧世界列表复制到 `server-rules.yml` 并删除旧文件。
 
+## MythicSpawnerHologram 刷怪点全息模块
+
+开启 `modules.mythic-spawner-hologram` 后，XyCore 会为 MythicMobs 刷新点自动创建全息，默认显示：
+
+```text
+当前世界: world
+怪物显示名称
+复活倒计时: 3分05秒
+上一任击杀者: PlayerName
+```
+
+必需插件：
+
+```text
+MythicMobs 4.11.x
+HolographicDisplays 2.x
+```
+
+当前已针对用户提供的 `HolographicDisplays 2.2.6` 完成 API 兼容核对。
+
+本模块直接更新 HolographicDisplays 文本行，不经过 PlaceholderAPI，因此不要求安装：
+
+```text
+HolographicExtension
+PlaceholderAPI
+ProtocolLib
+```
+
+默认配置示例：
+
+```yaml
+settings:
+  height-offset: 3.0
+  update-interval-ticks: 20
+  scan-interval-ticks: 100
+  excluded-spawners: []
+  excluded-worlds: []
+
+display:
+  lines:
+    - '&7当前世界: &f{world}'
+    - '&c{mob_name}'
+    - '&e复活倒计时: &f{respawn}'
+    - '&7上一任击杀者: &f{killer}'
+  alive-text: '&a存活中'
+  ready-text: '&a即将刷新'
+  no-killer-text: '&7暂无'
+
+name-overrides:
+  # boss_1: '&c赤焰魔君'
+```
+
+模块每秒更新状态文字，每 5 秒检查刷新点是否新增、移动或删除。执行 MythicMobs 重载后会自动重建索引和全息，不需要手动重新创建。
+
+`{mob_name}` 优先读取 `name-overrides`，其次读取 MythicMobs 的怪物显示名，最后回退到怪物内部 ID。`{killer}` 只记录玩家击杀，环境或其他怪物造成的死亡不会覆盖上一名玩家；当前记录保存在内存中，服务器重启后显示为“暂无”。
+
 ## 软依赖说明
 
 以下插件都是软依赖：
@@ -315,6 +379,7 @@ PlaceholderAPI
 MythicMobs
 AttributePlus
 DragonCore
+HolographicDisplays
 ```
 
 没有安装这些插件时，XyCore 不会因此无法启动。对应桥接会进入安全的不可用状态，调用时返回空实现或失败结果。
@@ -326,6 +391,7 @@ DragonCore
 - 没有 Vault 或经济插件，Core 仍可启动，但经济功能不可用。
 - 没有 AttributePlus，Core 仍可启动，但属性桥接不可用。
 - 没有 MythicMobs，Core 仍可启动，但只能使用原版物品 Provider。
+- 没有 HolographicDisplays，Core 仍可启动，但不能启用刷怪点全息模块。
 
 ## 命令
 
@@ -349,6 +415,17 @@ DragonCore
 `/xycore reload` 不等于 Bukkit `/reload`，它只处理 XyCore 和已注册的可重载服务。
 
 ## 版本记录
+
+### 0.3.5
+
+- 新增 `mythic-spawner-hologram` 可选模块。
+- 开启后自动为现有和新创建的 MythicMobs 刷新点生成全息。
+- 默认显示世界、怪物名称、复活倒计时和上一任玩家击杀者。
+- 自动处理刷新点新增、移动、删除和 MythicMobs 重载。
+- 使用缓存后的 MythicMobs/HolographicDisplays 反射 API，依赖缺失时不影响 XyCore 本体启动。
+- 只更新发生变化的 HolographicDisplays `TextLine`，避免每秒清空并重新创建四行全息。
+- 支持高度、更新间隔、排除刷新点、排除世界、文字模板、时间格式和名称覆盖配置。
+- HolographicExtension、PlaceholderAPI、ProtocolLib 均不是该模块的必要依赖。
 
 ### 0.3.3
 
@@ -449,5 +526,5 @@ gradlew.bat clean build
 输出文件：
 
 ```text
-build/libs/XyCore-0.3.3.jar
+build/libs/XyCore-0.3.5.jar
 ```

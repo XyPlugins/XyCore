@@ -36,16 +36,23 @@ modules:
   # 开启后生成：plugins/XyCore/modules/server-rules.yml
   server-rules: false
 
+  # MythicSpawnerHologram：MythicMobs 刷怪点自动全息模块。
+  # 作用：自动显示世界、怪物名、复活倒计时和上一任玩家击杀者。
+  # 必需软依赖：MythicMobs、HolographicDisplays。
+  # HolographicExtension、PlaceholderAPI、ProtocolLib 均不是本模块的必要依赖。
+  # 开启后生成：plugins/XyCore/modules/mythic-spawner-hologram.yml
+  mythic-spawner-hologram: false
+
   # Kit：礼包/新手包模块预留开关。
-  # 当前 0.3.3 暂未实现，开启也不会生成模块配置。
+  # 当前 0.3.5 暂未实现，开启也不会生成模块配置。
   kit: false
 
   # Nickname：昵称模块预留开关。
-  # 当前 0.3.3 暂未实现，后续可用于玩家昵称、称号显示等功能。
+  # 当前 0.3.5 暂未实现，后续可用于玩家昵称、称号显示等功能。
   nickname: false
 
   # Script：脚本模块预留开关。
-  # 当前 0.3.3 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
+  # 当前 0.3.5 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
   script: false
 
 storage:

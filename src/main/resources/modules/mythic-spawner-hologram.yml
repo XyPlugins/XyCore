@@ -1,0 +1,81 @@
+# ============================================================
+# MythicSpawnerHologram 刷怪点全息模块
+#
+# 开启方式：
+# 1. 打开 plugins/XyCore/config.yml
+# 2. 设置 modules.mythic-spawner-hologram: true
+# 3. 安装并启用 MythicMobs 与 HolographicDisplays
+# 4. 使用 /xycore reload 或重启服务器
+#
+# 模块作用：
+# - 自动为现有和新创建的 MythicMobs 刷怪点生成全息
+# - 自动处理刷新点移动、删除与 MythicMobs 重载
+# - 显示世界、怪物名称、复活倒计时和上一任玩家击杀者
+#
+# 依赖说明：
+# - 必需：MythicMobs、HolographicDisplays
+# - 不需要：HolographicExtension、PlaceholderAPI、ProtocolLib
+# ============================================================
+
+settings:
+  # 全息相对刷新点方块 Y 坐标的高度。
+  # 示例：刷新点 Y=64、height-offset=3.0，则全息位于 Y=67。
+  height-offset: 3.0
+
+  # 动态文字刷新间隔，单位 ticks；20 ticks = 1 秒。
+  # 最小值为 20，建议保持默认，避免没有必要的频繁更新。
+  update-interval-ticks: 20
+
+  # 扫描刷新点新增、移动、删除的间隔，单位 ticks。
+  # 默认 100 ticks = 5 秒，因此新建刷新点最迟约 5 秒出现全息。
+  scan-interval-ticks: 100
+
+  # 不显示全息的刷新点 ID，不区分大小写。
+  # 支持 '*' 排除全部刷新点，通常只用于临时关闭显示测试。
+  excluded-spawners:
+    # - test_spawner
+    # - dungeon_hidden_1
+
+  # 不显示全息的世界，不区分大小写。
+  # 支持 '*' 排除全部世界。
+  excluded-worlds:
+    # - lobby
+    # - build_world
+
+display:
+  # 全息文本，从上到下排列；最多 8 行。
+  # 可用变量：
+  # {world}    = 刷新点所在世界
+  # {spawner}  = MythicMobs 刷新点 ID
+  # {mob_id}   = MythicMobs 怪物内部 ID/类型配置
+  # {mob_name} = 怪物显示名
+  # {respawn}  = 存活状态、复活倒计时或即将刷新
+  # {killer}   = 上一任玩家击杀者；服务器重启后重置
+  lines:
+    - '&7当前世界: &f{world}'
+    - '&c{mob_name}'
+    - '&e复活倒计时: &f{respawn}'
+    - '&7上一任击杀者: &f{killer}'
+
+  # 当前刷新点仍有存活怪物时，{respawn} 显示的内容。
+  alive-text: '&a存活中'
+
+  # 冷却结束、等待 MythicMobs 刷新条件满足时显示的内容。
+  ready-text: '&a即将刷新'
+
+  # 还没有记录到玩家击杀者时显示的内容。
+  no-killer-text: '&7暂无'
+
+  # 倒计时格式。
+  # 大于等于 1 小时使用 hours；大于等于 1 分钟使用 minutes；否则使用 seconds。
+  time-format:
+    hours: '{hours}时{minutes}分{seconds}秒'
+    minutes: '{minutes}分{seconds}秒'
+    seconds: '{seconds}秒'
+
+# 特殊刷新点显示名覆盖。
+# 键是 MythicMobs 刷新点 ID，值是希望显示的怪物名称。
+# 没有覆盖时，优先读取 MythicMobs 怪物 Display，再回退到怪物内部 ID。
+name-overrides:
+  # boss_1: '&c赤焰魔君'
+  # fishing_guardian: '&b深渊守卫'

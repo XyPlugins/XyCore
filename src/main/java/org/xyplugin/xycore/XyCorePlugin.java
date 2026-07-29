@@ -7,6 +7,7 @@ import org.xyplugin.xycore.api.XyCoreApi;
 import org.xyplugin.xycore.api.item.ItemProvider;
 import org.xyplugin.xycore.internal.CoreApiImpl;
 import org.xyplugin.xycore.internal.command.CoreCommand;
+import org.xyplugin.xycore.internal.hologram.MythicSpawnerHologramModule;
 import org.xyplugin.xycore.internal.listener.CoreListener;
 import org.xyplugin.xycore.internal.lore.LoreCommandBindService;
 import org.xyplugin.xycore.internal.module.CoreModule;
@@ -46,6 +47,7 @@ public final class XyCorePlugin extends JavaPlugin {
         moduleManager.register(new WorldProtectModule(this));
         moduleManager.register(new WorldPermissionModule(this));
         moduleManager.register(new ServerRulesModule(this));
+        moduleManager.register(new MythicSpawnerHologramModule(this));
         api.getReloads().register(moduleManager);
         try {
             moduleManager.refreshConfiguredModules();
@@ -143,6 +145,12 @@ public final class XyCorePlugin extends JavaPlugin {
                 papiBridge != null, "%xycore_*%", "未挂钩（Expansion 不兼容或注册失败）"));
         getLogger().info(" - MythicMobs: " + hookStatus("MythicMobs", "integrations.mythicmobs",
                 hasAvailableItemProvider("mythicmobs"), "ItemProvider", "未挂钩（物品 API 不兼容）"));
+        CoreModule spawnerHologram = moduleManager == null
+                ? null : moduleManager.getModule("mythic-spawner-hologram");
+        getLogger().info(" - HolographicDisplays: " + hookStatus("HolographicDisplays",
+                "modules.mythic-spawner-hologram",
+                spawnerHologram != null && spawnerHologram.isEnabled(),
+                "MythicSpawnerHologram", "未挂钩（模块依赖或 API 不兼容）"));
         getLogger().info(" - AttributePlus: " + hookStatus("AttributePlus", "integrations.attributeplus.enabled",
                 api.getAttributes().isAvailable(), api.getAttributes().getProviderName(), "未挂钩（API 不兼容或 PlaceholderAPI 不可用）"));
         getLogger().info(" - DragonCore: " + hookStatus("DragonCore", "integrations.dragoncore.enabled",
