@@ -35,4 +35,11 @@ public final class VanillaItemProvider implements ItemProvider {
         if (material == null) return Optional.empty();
         return Optional.of(new ItemStack(material, amount));
     }
+
+    @Override
+    public boolean matches(String itemId, ItemStack item) {
+        if (itemId == null || item == null || item.getType() == Material.AIR) return false;
+        Material material = Material.matchMaterial(itemId);
+        return material != null && item.getType() == material;
+    }
 }

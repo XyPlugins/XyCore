@@ -1,4 +1,4 @@
-# XyCore 0.3.9
+# XyCore 0.3.10
 
 XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核心插件。
 
@@ -25,7 +25,7 @@ XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核�
 
 ## 快速使用
 
-1. 将 `XyCore-0.3.9.jar` 放入 `plugins` 文件夹。
+1. 将 `XyCore-0.3.10.jar` 放入 `plugins` 文件夹。
 2. 启动服务器生成 `plugins/XyCore/config.yml`。
 3. 在 `config.yml` 中开启需要的模块。
 4. 使用 `/xycore reload` 或重启服务器。
@@ -78,15 +78,15 @@ modules:
   item-name-display: false
 
   # Kit：礼包/新手包模块预留开关。
-  # 当前 0.3.9 暂未实现，开启也不会生成模块配置。
+  # 当前 0.3.10 暂未实现，开启也不会生成模块配置。
   kit: false
 
   # Nickname：昵称模块预留开关。
-  # 当前 0.3.9 暂未实现，后续可用于玩家昵称、称号显示等功能。
+  # 当前 0.3.10 暂未实现，后续可用于玩家昵称、称号显示等功能。
   nickname: false
 
   # Script：脚本模块预留开关。
-  # 当前 0.3.9 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
+  # 当前 0.3.10 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
   script: false
 ```
 
@@ -455,6 +455,22 @@ HolographicDisplays
 - 没有 MythicMobs，Core 仍可启动，但只能使用原版物品 Provider。
 - 没有 HolographicDisplays，Core 仍可启动，但不能启用刷怪点全息模块。
 
+## 完整物品ID匹配API
+
+0.3.10 为锻造、仓库、商店等插件新增统一的现有物品匹配入口：
+
+```java
+boolean matched = XyCore.get().getItems().matches("xyitems:forge_crystal", stack);
+```
+
+完整ID格式固定为 `provider:item`：
+
+- `minecraft:IRON_INGOT`：按1.12.2 Bukkit Material匹配。
+- `xyitems:<物品ID>`：按XyItems写入的隐藏身份标签匹配。
+- `mythicmobs:<物品ID>`：按MythicMobs 4.11物品的 `MYTHIC_TYPE` 标签匹配。
+
+原版匹配会主动排除已经被XyItems或MythicMobs识别的自定义物品。因此一个材质为铁锭的RPG物品不会同时被误当作 `minecraft:IRON_INGOT` 消耗。匹配不读取显示名称和Lore。
+
 ## 命令
 
 ```text
@@ -483,6 +499,13 @@ HolographicDisplays
 `mms paste` 是内置管理命令，不需要开启模块。它调用 MythicMobs 4.11 自带的刷新点复制逻辑，新刷新点会由 MythicMobs 保存到自己的 Spawners 配置里，XyCore 不额外保存刷新点数据。
 
 ## 版本记录
+
+### 0.3.10
+
+- 新增 `ItemLibraryService#matches`，供XyForgeCrafting与XySoulSpace按完整物品库ID统计和扣除现有物品。
+- `ItemProvider` 新增默认匹配实现，已有提供器保持二进制兼容。
+- 原版材料匹配会排除带XyItems/MythicMobs身份的自定义物品，避免相同材质误扣。
+- MythicMobs 4.11提供器缓存反射句柄并读取 `MYTHIC_TYPE`，不按名称或Lore猜测物品身份。
 
 ### 0.3.9
 
@@ -614,5 +637,5 @@ gradlew.bat clean build
 输出文件：
 
 ```text
-build/libs/XyCore-0.3.9.jar
+build/libs/XyCore-0.3.10.jar
 ```

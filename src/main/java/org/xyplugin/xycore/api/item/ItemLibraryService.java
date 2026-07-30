@@ -18,5 +18,10 @@ public interface ItemLibraryService {
 
     Optional<ItemStack> create(String namespacedId, int amount);
 
+    /**
+     * Matches an existing stack against a provider:item id without relying on display name or lore.
+     */
+    boolean matches(String namespacedId, ItemStack item);
+
     Collection<String> getItemIds(String providerId);
 }

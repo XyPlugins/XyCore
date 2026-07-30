@@ -13,6 +13,17 @@
 - 模块开关位于：`src/main/resources/config.yml -> modules`
 - 模块默认配置位于：`src/main/resources/modules/`
 
+## v0.3.10 变更
+
+### XyForgeCrafting物品匹配底座
+
+- `ItemLibraryService` 新增 `matches(String namespacedId, ItemStack item)`。
+- `ItemProvider` 新增默认 `matches`，默认通过稳定的 `identify` 结果比较提供器内部ID，避免破坏已有提供器。
+- `VanillaItemProvider` 按1.12.2 `Material` 匹配；服务层在匹配 `minecraft:` 前先排除能被其他自定义提供器识别的物品。
+- `MythicMobsItemProvider` 针对本服MythicMobs 4.11读取物品NBT的 `MYTHIC_TYPE`，相关构造器和Method只在桥接初始化时反射一次。
+- 这套接口是XySoulSpace原子材料API和XyForgeCrafting背包扫描的共同规则，禁止各插件再按去色名称或Lore自行实现一套匹配。
+- 目标仍固定为Paper/Spigot 1.12.2与Java 8，不添加现代Material或MythicMobs 5.x代码路径。
+
 ## v0.3.9 变更
 
 ### MythicMobs 刷新点粘贴命令

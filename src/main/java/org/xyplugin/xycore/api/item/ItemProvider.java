@@ -19,4 +19,14 @@ public interface ItemProvider {
     default Optional<String> identify(ItemStack item) {
         return Optional.empty();
     }
+
+    /**
+     * Checks whether an existing stack belongs to the requested provider-local item id.
+     * Providers with stable item tags normally only need to implement {@link #identify(ItemStack)}.
+     */
+    default boolean matches(String itemId, ItemStack item) {
+        if (itemId == null || itemId.trim().isEmpty() || item == null) return false;
+        Optional<String> identified = identify(item);
+        return identified.isPresent() && itemId.trim().equalsIgnoreCase(identified.get());
+    }
 }

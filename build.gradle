@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'org.xyplugin'
-version = '0.3.9'
+version = '0.3.10'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -37,6 +37,13 @@ dependencies {
 
     // DragonCore 2.6.2.9 内嵌的 HikariCP 4.0.3 与 SLF4J 1.7.30 子集。
     implementation files('libs/HikariCP-4.0.3-slf4j-1.7.30.jar')
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation files('libs/paper-api-1.12.2-R0.1-SNAPSHOT.jar')
+    testImplementation files('libs/bungeecord-chat-1.12-SNAPSHOT.jar')
+    testImplementation 'com.google.guava:guava:21.0'
+    testImplementation 'com.google.code.gson:gson:2.8.0'
+    testImplementation 'org.yaml:snakeyaml:1.19'
+    testImplementation 'commons-lang:commons-lang:2.6'
 }
 
 compileJava.dependsOn compilePapiStubJava

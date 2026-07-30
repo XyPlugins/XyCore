@@ -1,5 +1,5 @@
 name: XyCore
-version: '0.3.9'
+version: '0.3.10'
 main: org.xyplugin.xycore.XyCorePlugin
 api-version: '1.12'
 author: XyPlugin

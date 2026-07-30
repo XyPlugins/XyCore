@@ -54,6 +54,33 @@ public final class ItemLibraryServiceImpl implements ItemLibraryService {
     }
 
     @Override
+    public boolean matches(String namespacedId, ItemStack item) {
+        if (namespacedId == null || item == null) return false;
+        int separator = namespacedId.indexOf(':');
+        if (separator <= 0 || separator >= namespacedId.length() - 1) return false;
+
+        String providerId = namespacedId.substring(0, separator).trim().toLowerCase();
+        String itemId = namespacedId.substring(separator + 1).trim();
+        if (providerId.isEmpty() || itemId.isEmpty()) return false;
+
+        ItemProvider provider = providers.get(providerId);
+        if (provider == null || !provider.isAvailable()) return false;
+
+        // A tagged XyItems/MythicMobs stack must not also satisfy a vanilla material cost.
+        if ("minecraft".equals(providerId)) {
+            for (ItemProvider candidate : providers.values()) {
+                if (candidate == provider || !candidate.isAvailable()) continue;
+                try {
+                    if (candidate.identify(item).isPresent()) return false;
+                } catch (RuntimeException ignored) {
+                    // One optional provider must not prevent other providers from matching safely.
+                }
+            }
+        }
+        return provider.matches(itemId, item);
+    }
+
+    @Override
     public Collection<String> getItemIds(String providerId) {
         ItemProvider provider = providers.get(providerId == null ? "" : providerId.toLowerCase());
         return provider == null ? Collections.emptyList() : provider.getItemIds();

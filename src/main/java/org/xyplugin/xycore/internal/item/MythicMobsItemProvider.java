@@ -6,6 +6,7 @@ import org.bukkit.plugin.Plugin;
 import org.xyplugin.xycore.XyCorePlugin;
 import org.xyplugin.xycore.api.item.ItemProvider;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,12 +26,35 @@ public final class MythicMobsItemProvider implements ItemProvider {
     private final XyCorePlugin plugin;
     private final ClassLoader classLoader;
     private final boolean available;
+    private final Constructor<?> bukkitItemStackConstructor;
+    private final Method getNbtMethod;
+    private final Method getNbtStringMethod;
 
     public MythicMobsItemProvider(XyCorePlugin plugin) {
         this.plugin = plugin;
         Plugin mythicMobs = Bukkit.getPluginManager().getPlugin("MythicMobs");
         this.classLoader = mythicMobs == null ? getClass().getClassLoader() : mythicMobs.getClass().getClassLoader();
         this.available = mythicMobs != null && findClass("io.lumine.xikage.mythicmobs.MythicMobs") != null;
+
+        Constructor<?> itemStackConstructor = null;
+        Method readNbt = null;
+        Method readNbtString = null;
+        if (available) {
+            try {
+                Class<?> wrapper = findClass("io.lumine.xikage.mythicmobs.adapters.bukkit.BukkitItemStack");
+                Class<?> compound = findClass("io.lumine.xikage.mythicmobs.util.jnbt.CompoundTag");
+                if (wrapper != null && compound != null) {
+                    itemStackConstructor = wrapper.getConstructor(ItemStack.class);
+                    readNbt = wrapper.getMethod("getNBT");
+                    readNbtString = compound.getMethod("getString", String.class);
+                }
+            } catch (Exception failure) {
+                plugin.getLogger().warning("MythicMobs 物品身份读取 API 初始化失败: " + failure.getMessage());
+            }
+        }
+        bukkitItemStackConstructor = itemStackConstructor;
+        getNbtMethod = readNbt;
+        getNbtStringMethod = readNbtString;
     }
 
     @Override
@@ -76,6 +100,25 @@ public final class MythicMobsItemProvider implements ItemProvider {
             return Optional.of(stack);
         } catch (Exception failure) {
             plugin.getLogger().warning("生成 MythicMobs 物品 " + itemId + " 失败: " + failure.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<String> identify(ItemStack item) {
+        if (!available || item == null || bukkitItemStackConstructor == null
+                || getNbtMethod == null || getNbtStringMethod == null) {
+            return Optional.empty();
+        }
+        try {
+            Object wrapper = bukkitItemStackConstructor.newInstance(item);
+            Object compound = getNbtMethod.invoke(wrapper);
+            if (compound == null) return Optional.empty();
+            Object raw = getNbtStringMethod.invoke(compound, "MYTHIC_TYPE");
+            String itemId = raw == null ? "" : String.valueOf(raw).trim();
+            return itemId.isEmpty() ? Optional.empty() : Optional.of(itemId);
+        } catch (Exception ignored) {
+            // Inventory scans are a hot path; malformed/non-MM stacks fail quietly.
             return Optional.empty();
         }
     }
