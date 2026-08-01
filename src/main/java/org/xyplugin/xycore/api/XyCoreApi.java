@@ -39,5 +39,13 @@ public interface XyCoreApi {
 
     ReloadManager getReloads();
 
+    /**
+     * 获取 Xy 系列插件给玩家发送聊天消息时使用的统一前缀。
+     *
+     * <p>返回值来自 XyCore 主配置 {@code messages.prefix}，保持配置原样，
+     * 调用方负责按自身文本工具转换颜色代码。</p>
+     */
+    String getMessagePrefix();
+
     String getVersion();
 }

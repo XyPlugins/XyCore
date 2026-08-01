@@ -13,6 +13,19 @@
 - 模块开关位于：`src/main/resources/config.yml -> modules`
 - 模块默认配置位于：`src/main/resources/modules/`
 
+## v0.3.11 变更
+
+### Xy 系列玩家消息统一前缀
+
+- `XyCoreApi` 新增 `getMessagePrefix()`，作为全部 Xy 系列插件玩家聊天消息前缀的标准入口。
+- 方法读取 `config.yml -> messages.prefix`，返回配置原值，不自动补空格或改颜色；空格也由服主在配置中决定。
+- XyCore 自带 WorldProtect 的 `{core_prefix}` 也改为通过该 API 读取，确保 Core 内外统一。
+- 后续开发新 Xy 插件时必须遵守：
+  - 如果插件 `depend: [XyCore]`，玩家消息直接使用 `XyCore.get().getMessagePrefix()`。
+  - 如果插件可以独立运行、只 `softdepend: [XyCore]`，检测到已启用 XyCore 时优先走 `getMessagePrefix()`，否则使用本插件自己的配置前缀。
+  - 不要把控制台日志切到统一玩家前缀；后台日志保留各插件名方便排错。
+- 本约定只针对发送给玩家或命令发送者的聊天消息，不改变称号聊天格式、DragonCore HUD文字、GUI标题和后台日志。
+
 ## v0.3.10 变更
 
 ### XyForgeCrafting物品匹配底座

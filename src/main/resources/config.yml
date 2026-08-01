@@ -137,7 +137,7 @@ items:
 
 messages:
   # 全局插件前缀。
-  # WorldProtect 默认会把这个前缀拼在提示前面。
+  # WorldProtect 和其他检测到 XyCore 的 Xy 系列插件，给玩家发送聊天提示时会优先使用这个前缀。
   # 默认效果：[XyCore]该世界无法破坏方块
   # 如果想要空格，可以改成 '&7[&bXyCore&7]&r '
   prefix: '&7[&bXyCore&7]&r'

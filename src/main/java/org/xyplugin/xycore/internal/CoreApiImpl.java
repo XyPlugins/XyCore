@@ -208,6 +208,12 @@ public final class CoreApiImpl implements XyCoreApi {
     }
 
     @Override
+    public String getMessagePrefix() {
+        String prefix = plugin.getConfig().getString("messages.prefix", "&7[&bXyCore&7]&r");
+        return prefix == null ? "" : prefix;
+    }
+
+    @Override
     public String getVersion() {
         return plugin.getDescription().getVersion();
     }

@@ -1,4 +1,4 @@
-# XyCore 0.3.10
+# XyCore 0.3.11
 
 XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核心插件。
 
@@ -25,7 +25,7 @@ XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核�
 
 ## 快速使用
 
-1. 将 `XyCore-0.3.10.jar` 放入 `plugins` 文件夹。
+1. 将 `XyCore-0.3.11.jar` 放入 `plugins` 文件夹。
 2. 启动服务器生成 `plugins/XyCore/config.yml`。
 3. 在 `config.yml` 中开启需要的模块。
 4. 使用 `/xycore reload` 或重启服务器。
@@ -78,15 +78,15 @@ modules:
   item-name-display: false
 
   # Kit：礼包/新手包模块预留开关。
-  # 当前 0.3.10 暂未实现，开启也不会生成模块配置。
+  # 当前 0.3.11 暂未实现，开启也不会生成模块配置。
   kit: false
 
   # Nickname：昵称模块预留开关。
-  # 当前 0.3.10 暂未实现，后续可用于玩家昵称、称号显示等功能。
+  # 当前 0.3.11 暂未实现，后续可用于玩家昵称、称号显示等功能。
   nickname: false
 
   # Script：脚本模块预留开关。
-  # 当前 0.3.10 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
+  # 当前 0.3.11 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
   script: false
 ```
 
@@ -227,6 +227,18 @@ messages:
 ```
 
 提示内容和前缀都可以在配置中自定义。
+
+## Xy 系列玩家消息统一前缀
+
+0.3.11 起，XyCore 对外提供：
+
+```java
+String prefix = XyCore.get().getMessagePrefix();
+```
+
+所有 Xy 系列插件给玩家或命令发送者发聊天提示时，都应优先使用这个前缀。这样只需要修改 `plugins/XyCore/config.yml -> messages.prefix`，XyItems、XyForgeCrafting、XyTitle、XySoulSpace 等玩家提示就能保持同一套前缀风格。
+
+独立插件如果只把 XyCore 作为软依赖，则在没有安装或启用 XyCore 时继续使用本插件自己的 `messages.prefix` 兜底。控制台日志和后台报错不走这个统一玩家前缀，仍保留各插件自己的名称，方便排查问题。
 
 ## WorldPermission 模块
 
@@ -500,6 +512,14 @@ boolean matched = XyCore.get().getItems().matches("xyitems:forge_crystal", stack
 
 ## 版本记录
 
+### 0.3.11
+
+- 新增 `XyCoreApi#getMessagePrefix()`，作为 Xy 系列插件玩家聊天消息统一前缀入口。
+- 统一前缀读取 `config.yml -> messages.prefix`，颜色和空格保持配置原样。
+- WorldProtect `{core_prefix}` 改为通过同一 API 读取。
+- 明确后续新插件约定：检测到 XyCore 时玩家消息使用 XyCore 前缀；独立插件未检测到 XyCore 时使用自身前缀兜底。
+- 控制台日志仍保留各插件自己的后台输出名称。
+
 ### 0.3.10
 
 - 新增 `ItemLibraryService#matches`，供XyForgeCrafting与XySoulSpace按完整物品库ID统计和扣除现有物品。
@@ -637,5 +657,5 @@ gradlew.bat clean build
 输出文件：
 
 ```text
-build/libs/XyCore-0.3.10.jar
+build/libs/XyCore-0.3.11.jar
 ```

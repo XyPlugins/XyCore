@@ -302,7 +302,7 @@ public final class WorldProtectModule extends AbstractCoreModule implements List
         String prefix = "";
         if (getModuleConfig().getBoolean("settings.use-prefix", true)) {
             prefix = getModuleConfig().getString("settings.prefix", "{core_prefix}");
-            String corePrefix = plugin.getConfig().getString("messages.prefix", "&7[&bXyCore&7]&r");
+            String corePrefix = plugin.getApi().getMessagePrefix();
             prefix = prefix.replace("{core_prefix}", corePrefix == null ? "" : corePrefix);
         }
         String body = message

@@ -589,7 +589,8 @@ public final class LoreCommandBindService extends AbstractCoreModule implements 
 
     private void send(Player player, String message) {
         if (message != null && !message.trim().isEmpty()) {
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                    plugin.getApi().getMessagePrefix() + message));
         }
     }
 

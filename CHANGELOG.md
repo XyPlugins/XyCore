@@ -1,5 +1,13 @@
 # XyCore 更新说明
 
+## 0.3.11 - 2026-08-02
+
+- 新增 `XyCoreApi#getMessagePrefix()`，作为 Xy 系列插件玩家聊天消息的统一前缀入口。
+- 统一前缀直接读取 `config.yml -> messages.prefix`，保留配置中的颜色符号和空格，不在代码里自动增删。
+- WorldProtect 内部 `{core_prefix}` 改为通过同一 API 读取，避免 Core 内外前缀来源不一致。
+- 明确约定：后续 Xy 系列新插件检测到 XyCore 时，玩家聊天消息必须优先使用 XyCore 前缀；独立插件在没有 XyCore 时保留自己的前缀兜底。
+- 控制台日志不纳入统一玩家前缀，继续保留各插件自己的后台输出名称。
+
 ## 0.3.10 - 2026-07-30
 
 - 新增完整物品库ID匹配API `ItemLibraryService#matches`。

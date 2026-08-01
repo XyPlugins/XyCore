@@ -191,7 +191,7 @@ public final class CoreCommand implements CommandExecutor {
     }
 
     private String color(String message) {
-        return ChatColor.translateAlternateColorCodes('&', message);
+        return ChatColor.translateAlternateColorCodes('&', plugin.getApi().getMessagePrefix() + message);
     }
 
     private void sendLater(CommandSender sender, String message) {
