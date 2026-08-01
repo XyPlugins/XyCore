@@ -1,4 +1,4 @@
-# XyCore 0.3.11
+# XyCore 0.3.12
 
 XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核心插件。
 
@@ -25,13 +25,21 @@ XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核�
 
 ## 快速使用
 
-1. 将 `XyCore-0.3.11.jar` 放入 `plugins` 文件夹。
+1. 将 `XyCore-0.3.12.jar` 放入 `plugins` 文件夹。
 2. 启动服务器生成 `plugins/XyCore/config.yml`。
 3. 在 `config.yml` 中开启需要的模块。
 4. 使用 `/xycore reload` 或重启服务器。
 5. 开启后的模块配置会生成在 `plugins/XyCore/modules/`。
 
 第一次加载时，默认只生成主配置 `config.yml`。模块配置不会提前生成，只有模块开关打开后才会创建。
+
+## Xy 系列玩家前缀规范
+
+从 `0.3.12` 开始，XyCore 明确区分“玩家玩法提示”和“管理/排错提示”：
+
+- 玩家玩法结果使用 `plugins/XyCore/config.yml -> messages.prefix`，例如获得物品、锻造成功/失败、获得称号、开启杀戮、导航提示、灵魂仓库存取等。
+- `/help`、权限不足、参数错误、`reload`、`list/status/info`、后台日志和配置错误保留各插件自己的前缀，方便管理员定位来源。
+- 可独立运行的 Xy 插件在没有 XyCore 时继续使用自己的本地前缀兜底。
 
 ## 模块系统
 
@@ -78,15 +86,15 @@ modules:
   item-name-display: false
 
   # Kit：礼包/新手包模块预留开关。
-  # 当前 0.3.11 暂未实现，开启也不会生成模块配置。
+  # 当前版本暂未实现，开启也不会生成模块配置。
   kit: false
 
   # Nickname：昵称模块预留开关。
-  # 当前 0.3.11 暂未实现，后续可用于玩家昵称、称号显示等功能。
+  # 当前版本暂未实现，后续可用于玩家昵称、称号显示等功能。
   nickname: false
 
   # Script：脚本模块预留开关。
-  # 当前 0.3.11 暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
+  # 当前版本暂未实现，后续可用于轻量脚本、事件监听、命令注入等扩展。
   script: false
 ```
 
@@ -236,7 +244,7 @@ messages:
 String prefix = XyCore.get().getMessagePrefix();
 ```
 
-所有 Xy 系列插件给玩家或命令发送者发聊天提示时，都应优先使用这个前缀。这样只需要修改 `plugins/XyCore/config.yml -> messages.prefix`，XyItems、XyForgeCrafting、XyTitle、XySoulSpace 等玩家提示就能保持同一套前缀风格。
+0.3.12 起进一步明确使用范围：只有玩家玩法结果应优先使用这个前缀，例如获得物品、锻造结果、获得称号、开启杀戮、导航提示、灵魂仓库存取等。help、权限不足、参数错误、reload、list/info/status、后台日志和配置错误仍使用各插件自己的前缀。这样只需要修改 `plugins/XyCore/config.yml -> messages.prefix`，玩家看到的系统玩法提示就能保持同一套风格，同时管理员仍能定位来源插件。
 
 独立插件如果只把 XyCore 作为软依赖，则在没有安装或启用 XyCore 时继续使用本插件自己的 `messages.prefix` 兜底。控制台日志和后台报错不走这个统一玩家前缀，仍保留各插件自己的名称，方便排查问题。
 
@@ -657,5 +665,5 @@ gradlew.bat clean build
 输出文件：
 
 ```text
-build/libs/XyCore-0.3.11.jar
+build/libs/XyCore-0.3.12.jar
 ```

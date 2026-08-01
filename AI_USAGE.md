@@ -1,5 +1,20 @@
 # AI 使用记录
 
+## 0.3.12
+
+本次维护由 AI 根据服主最终确认的“前端玩家玩法提示统一、后台管理提示保留原插件名”规则辅助完成。
+
+关键决策：
+
+- 明确玩家玩法结果才使用 XyCore `messages.prefix`，例如“你获得了物品”“锻造成功”“你已开启杀戮”“获得称号”等。
+- `/help`、权限不足、参数错误、reload、list/status/info 与后台日志保留本插件前缀，便于管理员查错。
+- 修正此前粗暴按 `Player` 判断前缀的方向，避免玩家执行管理命令时也显示系统提示。
+- XyCore 启动后输出检测到的统一玩家前缀附属插件，作为后台摘要，不影响运行性能。
+
+验证记录：
+
+- 已执行受影响插件 `compileJava` 编译探针，XyCore、XyItems、XyForgeCrafting、XyTitle、XySoulSpace、XyBattleHud、XyKillAura、XyChemdahShow、XyMythicItemGui 均通过。
+
 ## 0.3.11
 
 本次维护由AI根据服主确认的“Xy系列玩家聊天前缀统一由XyCore管理”需求辅助完成。

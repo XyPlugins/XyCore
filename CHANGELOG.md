@@ -1,5 +1,12 @@
 # XyCore 更新说明
 
+## 0.3.12 - 2026-08-02
+
+- 最终确认并固化 Xy 系列前缀语义：玩家玩法结果走 XyCore `messages.prefix`，管理/帮助/报错/后台日志保留各插件自己的前缀。
+- `/xycore help/status/reload/modules/save/info/mms` 等管理反馈固定显示 XyCore 管理前缀，不会在服主把玩家前缀改成“系统”后混入系统提示。
+- 启动后延迟检测 XyItems、XyForgeCrafting、XyChemdahShow 等附属插件，并在后台输出“玩家提示已统一输出 XyCore 前缀”的摘要。
+- 更新维护手册，要求后续新插件新增聊天提示时按语义分流，而不是简单按发送者是否为玩家判断。
+
 ## 0.3.11 - 2026-08-02
 
 - 新增 `XyCoreApi#getMessagePrefix()`，作为 Xy 系列插件玩家聊天消息的统一前缀入口。

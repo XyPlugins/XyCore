@@ -63,6 +63,7 @@ public final class XyCorePlugin extends JavaPlugin {
         autosaveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this,
                 () -> api.getPlayerData().saveAll(), minutes * 1200L, minutes * 1200L).getTaskId();
         logStartupSummary();
+        Bukkit.getScheduler().runTask(this, this::logUnifiedPrefixAddons);
     }
 
     @Override
@@ -157,6 +158,24 @@ public final class XyCorePlugin extends JavaPlugin {
                 api.getAttributes().isAvailable(), api.getAttributes().getProviderName(), "未挂钩（API 不兼容或 PlaceholderAPI 不可用）"));
         getLogger().info(" - DragonCore: " + hookStatus("DragonCore", "integrations.dragoncore.enabled",
                 api.getClientBridge().isAvailable(), api.getClientBridge().getProviderName(), "未挂钩（客户端 API 不兼容）"));
+    }
+
+    /** 输出使用 XyCore 玩家消息前缀的已启用附属插件，后台仍保留各插件自己的日志名。 */
+    private void logUnifiedPrefixAddons() {
+        String[] addonNames = {"XyItems", "XyForgeCrafting", "XyChemdahShow"};
+        StringBuilder enabled = new StringBuilder();
+        for (String addonName : addonNames) {
+            Plugin addon = Bukkit.getPluginManager().getPlugin(addonName);
+            if (addon != null && addon.isEnabled()) {
+                if (enabled.length() > 0) enabled.append("、");
+                enabled.append(addonName);
+            }
+        }
+        if (enabled.length() == 0) {
+            getLogger().info("未检测到已启用的统一玩家前缀附属插件。");
+        } else {
+            getLogger().info("检测到附属插件 " + enabled + "，玩家提示已统一输出 XyCore 前缀。");
+        }
     }
 
     private String hookStatus(String pluginName, String configPath, boolean hooked,

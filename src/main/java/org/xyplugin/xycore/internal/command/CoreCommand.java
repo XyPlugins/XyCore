@@ -28,7 +28,7 @@ public final class CoreCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!sender.hasPermission("xycore.admin")) {
-            sender.sendMessage(color("&c你没有权限使用 XyCore 管理命令。"));
+            sender.sendMessage(color(sender, "&c你没有权限使用 XyCore 管理命令。"));
             return true;
         }
         if (args.length == 0 || "help".equalsIgnoreCase(args[0])) {
@@ -41,7 +41,7 @@ public final class CoreCommand implements CommandExecutor {
                 return true;
             case "reload":
                 plugin.reloadCore();
-                sender.sendMessage(color("&aXyCore 配置和已注册 Xy 扩展已重载。"));
+                sender.sendMessage(color(sender, "&aXyCore 配置和已注册 Xy 扩展已重载。"));
                 return true;
             case "modules":
             case "module":
@@ -63,26 +63,26 @@ public final class CoreCommand implements CommandExecutor {
     }
 
     private void status(CommandSender sender) {
-        sender.sendMessage(color("&bXyCore &f" + plugin.getApi().getVersion()));
-        sender.sendMessage(color("&7存储: &f" + plugin.getApi().getStorage().getBackendName()));
-        sender.sendMessage(color("&7在线数据会话: &f" + plugin.getApi().getPlayerData().getActiveSessionCount()));
-        sender.sendMessage(color("&7Vault: &f" + plugin.getApi().getEconomy().getProviderName()));
-        sender.sendMessage(color("&7AttributePlus: &f" + plugin.getApi().getAttributes().getProviderName()));
-        sender.sendMessage(color("&7客户端桥接: &f" + plugin.getApi().getClientBridge().getProviderName()));
-        sender.sendMessage(color("&7物品提供器: &f" + plugin.getApi().getItems().getProviders().size()));
-        sender.sendMessage(color("&7可重载扩展: &f" + plugin.getApi().getReloads().getIds()));
-        sender.sendMessage(color("&7模块: &f" + (plugin.getModuleManager() == null
+        sender.sendMessage(color(sender, "&bXyCore &f" + plugin.getApi().getVersion()));
+        sender.sendMessage(color(sender, "&7存储: &f" + plugin.getApi().getStorage().getBackendName()));
+        sender.sendMessage(color(sender, "&7在线数据会话: &f" + plugin.getApi().getPlayerData().getActiveSessionCount()));
+        sender.sendMessage(color(sender, "&7Vault: &f" + plugin.getApi().getEconomy().getProviderName()));
+        sender.sendMessage(color(sender, "&7AttributePlus: &f" + plugin.getApi().getAttributes().getProviderName()));
+        sender.sendMessage(color(sender, "&7客户端桥接: &f" + plugin.getApi().getClientBridge().getProviderName()));
+        sender.sendMessage(color(sender, "&7物品提供器: &f" + plugin.getApi().getItems().getProviders().size()));
+        sender.sendMessage(color(sender, "&7可重载扩展: &f" + plugin.getApi().getReloads().getIds()));
+        sender.sendMessage(color(sender, "&7模块: &f" + (plugin.getModuleManager() == null
                 ? "[]" : plugin.getModuleManager().getStates())));
-        sender.sendMessage(color("&7LoreCommandBind 规则: &f" + (plugin.getLoreCommandBind() == null
+        sender.sendMessage(color(sender, "&7LoreCommandBind 规则: &f" + (plugin.getLoreCommandBind() == null
                 ? 0 : plugin.getLoreCommandBind().size())));
     }
 
     private void modules(CommandSender sender) {
         if (plugin.getModuleManager() == null) {
-            sender.sendMessage(color("&c模块管理器尚未初始化。"));
+            sender.sendMessage(color(sender, "&c模块管理器尚未初始化。"));
             return;
         }
-        sender.sendMessage(color("&b=== XyCore Modules ==="));
+        sender.sendMessage(color(sender, "&b=== XyCore Modules ==="));
         for (CoreModule module : plugin.getModuleManager().getModules()) {
             String extra = "";
             if (module instanceof LoreCommandBindService) {
@@ -100,7 +100,7 @@ public final class CoreCommand implements CommandExecutor {
                         + " &7白天: &f" + rules.getAlwaysDayWorldCount()
                         + " &7天气: &f" + rules.getNoRainWorldCount();
             }
-            sender.sendMessage(color("&e" + module.getId() + " &7" + (module.isEnabled() ? "启用" : "关闭")
+            sender.sendMessage(color(sender, "&e" + module.getId() + " &7" + (module.isEnabled() ? "启用" : "关闭")
                     + " &8(" + module.getConfigResourcePath() + ")" + extra));
         }
     }
@@ -113,7 +113,7 @@ public final class CoreCommand implements CommandExecutor {
         }
         Player player = Bukkit.getPlayerExact(args[1]);
         if (player == null) {
-            sender.sendMessage(color("&c玩家不在线。"));
+            sender.sendMessage(color(sender, "&c玩家不在线。"));
             return;
         }
         plugin.getApi().getPlayerData().save(player.getUniqueId()).whenComplete((ignored, failure) ->
@@ -122,27 +122,27 @@ public final class CoreCommand implements CommandExecutor {
 
     private void info(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(color("&e用法: /xycore info <玩家>"));
+            sender.sendMessage(color(sender, "&e用法: /xycore info <玩家>"));
             return;
         }
         Player player = Bukkit.getPlayerExact(args[1]);
         if (player == null) {
-            sender.sendMessage(color("&c玩家不在线。"));
+            sender.sendMessage(color(sender, "&c玩家不在线。"));
             return;
         }
         PlayerSession session = plugin.getApi().getPlayerData().getSession(player.getUniqueId());
-        sender.sendMessage(color("&7UUID: &f" + player.getUniqueId()));
-        sender.sendMessage(color("&7数据状态: &f" + (session != null && session.isReady() ? "READY" : "LOADING")));
-        sender.sendMessage(color("&7已加载模块: &f" + (session == null ? "[]" : session.getLoadedModules())));
+        sender.sendMessage(color(sender, "&7UUID: &f" + player.getUniqueId()));
+        sender.sendMessage(color(sender, "&7数据状态: &f" + (session != null && session.isReady() ? "READY" : "LOADING")));
+        sender.sendMessage(color(sender, "&7已加载模块: &f" + (session == null ? "[]" : session.getLoadedModules())));
     }
 
     private void mms(CommandSender sender, String[] args) {
         if (args.length < 3 || !"paste".equalsIgnoreCase(args[1])) {
-            sender.sendMessage(color("&e用法: /xycore mms paste <刷新点ID>"));
+            sender.sendMessage(color(sender, "&e用法: /xycore mms paste <刷新点ID>"));
             return;
         }
         if (!(sender instanceof Player)) {
-            sender.sendMessage(color("&c该命令只能由玩家在游戏内使用。"));
+            sender.sendMessage(color(sender, "&c该命令只能由玩家在游戏内使用。"));
             return;
         }
 
@@ -155,46 +155,46 @@ public final class CoreCommand implements CommandExecutor {
             MythicSpawnerCopyBridge.CopyResult result = bridge.copy(sourceId, targetId, location);
             switch (result) {
                 case SUCCESS:
-                    sender.sendMessage(color("&a已在脚下粘贴刷新点 &f" + targetId
+                    sender.sendMessage(color(sender, "&a已在脚下粘贴刷新点 &f" + targetId
                             + " &7(模板: &f" + sourceId + "&7)。"));
-                    sender.sendMessage(color("&7位置: &f" + location.getWorld().getName()
+                    sender.sendMessage(color(sender, "&7位置: &f" + location.getWorld().getName()
                             + " " + location.getBlockX()
                             + " " + location.getBlockY()
                             + " " + location.getBlockZ()));
                     return;
                 case SOURCE_NOT_FOUND:
-                    sender.sendMessage(color("&c没有该刷新点位"));
+                    sender.sendMessage(color(sender, "&c没有该刷新点位"));
                     return;
                 case TARGET_EXISTS:
-                    sender.sendMessage(color("&c刷新点 ID 已存在，请换个位置或稍后重试。"));
+                    sender.sendMessage(color(sender, "&c刷新点 ID 已存在，请换个位置或稍后重试。"));
                     return;
                 default:
-                    sender.sendMessage(color("&c刷新点粘贴失败。"));
+                    sender.sendMessage(color(sender, "&c刷新点粘贴失败。"));
                     return;
             }
         } catch (Exception failure) {
             String message = failure.getMessage();
-            sender.sendMessage(color("&c刷新点粘贴失败: &7"
+            sender.sendMessage(color(sender, "&c刷新点粘贴失败: &7"
                     + (message == null || message.trim().isEmpty()
                     ? failure.getClass().getSimpleName() : message)));
         }
     }
 
     private void help(CommandSender sender) {
-        sender.sendMessage(color("&b=== XyCore ==="));
-        sender.sendMessage(color("&e/xycore status &7查看 Core 状态"));
-        sender.sendMessage(color("&e/xycore reload &7重载配置和已注册扩展"));
-        sender.sendMessage(color("&e/xycore modules &7查看模块状态"));
-        sender.sendMessage(color("&e/xycore save [all|玩家] &7保存玩家数据"));
-        sender.sendMessage(color("&e/xycore info <玩家> &7查看数据会话"));
-        sender.sendMessage(color("&e/xycore mms paste <刷新点ID> &7在脚下粘贴 MythicMobs 刷新点"));
+        sender.sendMessage(color(sender, "&b=== XyCore ==="));
+        sender.sendMessage(color(sender, "&e/xycore status &7查看 Core 状态"));
+        sender.sendMessage(color(sender, "&e/xycore reload &7重载配置和已注册扩展"));
+        sender.sendMessage(color(sender, "&e/xycore modules &7查看模块状态"));
+        sender.sendMessage(color(sender, "&e/xycore save [all|玩家] &7保存玩家数据"));
+        sender.sendMessage(color(sender, "&e/xycore info <玩家> &7查看数据会话"));
+        sender.sendMessage(color(sender, "&e/xycore mms paste <刷新点ID> &7在脚下粘贴 MythicMobs 刷新点"));
     }
 
-    private String color(String message) {
-        return ChatColor.translateAlternateColorCodes('&', plugin.getApi().getMessagePrefix() + message);
+    private String color(CommandSender sender, String message) {
+        return ChatColor.translateAlternateColorCodes('&', "&7[&bXyCore&7]&r " + message);
     }
 
     private void sendLater(CommandSender sender, String message) {
-        Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(color(message)));
+        Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(color(sender, message)));
     }
 }

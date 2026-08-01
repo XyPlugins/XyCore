@@ -13,6 +13,17 @@
 - 模块开关位于：`src/main/resources/config.yml -> modules`
 - 模块默认配置位于：`src/main/resources/modules/`
 
+## v0.3.12 变更
+
+### Xy 系列前缀语义最终确认
+
+- 本次维护根据服主最终确认，将“统一前缀”从粗粒度的“玩家收到的消息”改为语义分流：
+  - 玩家玩法结果使用 `XyCoreApi#getMessagePrefix()`，包括获得物品、锻造结果、获得/装备称号、开启杀戮、导航玩法提示、灵魂仓库存取等。
+  - 管理、帮助、权限不足、参数错误、reload、list/info/status、后台日志和配置错误保留各插件自身前缀。
+- 不要再简单写成 `sender instanceof Player ? XyCorePrefix : LocalPrefix`，因为玩家也可能执行 help 或触发参数错误。
+- XyCore 自己的管理命令固定使用 XyCore 管理前缀，避免服主以后把 `messages.prefix` 改成“系统”时 `/xycore help` 也显示为系统提示。
+- `XyCorePlugin` 启动后延迟一 tick 检测常用附属插件并输出统一玩家前缀摘要，该输出是后台日志，仍通过 XyCore logger 打印。
+
 ## v0.3.11 变更
 
 ### Xy 系列玩家消息统一前缀
