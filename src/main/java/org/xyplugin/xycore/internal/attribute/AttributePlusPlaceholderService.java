@@ -137,6 +137,7 @@ public final class AttributePlusPlaceholderService implements AttributeService {
         try {
             Object data = directApi.invoke(directApi.getAttrData, entity);
             directApi.invoke(directApi.addSourceAttribute, data, source, new ArrayList<>(attributeLines), false);
+            directApi.refresh(entity);
             return true;
         } catch (Exception failure) {
             plugin.getLogger().warning("AttributePlus 增加属性源失败: " + failure.getMessage());
@@ -150,6 +151,7 @@ public final class AttributePlusPlaceholderService implements AttributeService {
         try {
             Object data = directApi.invoke(directApi.getAttrData, entity);
             directApi.invoke(directApi.takeSourceAttribute, data, source);
+            directApi.refresh(entity);
             return true;
         } catch (Exception failure) {
             plugin.getLogger().warning("AttributePlus 删除属性源失败: " + failure.getMessage());
@@ -189,19 +191,22 @@ public final class AttributePlusPlaceholderService implements AttributeService {
         private final Method getAttrData;
         private final Method addSourceAttribute;
         private final Method takeSourceAttribute;
+        private final Method updateAttribute;
 
         private DirectApi(Object target, Method getAttrData, Method addSourceAttribute,
-                          Method takeSourceAttribute) {
+                          Method takeSourceAttribute, Method updateAttribute) {
             this.target = target;
             this.getAttrData = getAttrData;
             this.addSourceAttribute = addSourceAttribute;
             this.takeSourceAttribute = takeSourceAttribute;
+            this.updateAttribute = updateAttribute;
         }
 
         private static DirectApi create(Class<?> type) {
             Method get = null;
             Method add = null;
             Method take = null;
+            Method update = null;
             for (Method method : type.getMethods()) {
                 Class<?>[] parameters = method.getParameterTypes();
                 if ("getAttrData".equals(method.getName()) && parameters.length == 1
@@ -215,6 +220,9 @@ public final class AttributePlusPlaceholderService implements AttributeService {
                 } else if ("takeSourceAttribute".equals(method.getName()) && parameters.length == 2
                         && parameters[1] == String.class) {
                     take = method;
+                } else if ("updateAttribute".equals(method.getName()) && parameters.length == 1
+                        && parameters[0].isAssignableFrom(LivingEntity.class)) {
+                    update = method;
                 }
             }
             if (get == null || add == null || take == null) return null;
@@ -227,7 +235,8 @@ public final class AttributePlusPlaceholderService implements AttributeService {
                 get.setAccessible(true);
                 add.setAccessible(true);
                 take.setAccessible(true);
-                return new DirectApi(target, get, add, take);
+                if (update != null) update.setAccessible(true);
+                return new DirectApi(target, get, add, take, update);
             } catch (Exception ignored) {
                 return null;
             }
@@ -235,6 +244,10 @@ public final class AttributePlusPlaceholderService implements AttributeService {
 
         private Object invoke(Method method, Object... args) throws Exception {
             return method.invoke(Modifier.isStatic(method.getModifiers()) ? null : target, args);
+        }
+
+        private void refresh(LivingEntity entity) throws Exception {
+            if (updateAttribute != null) invoke(updateAttribute, entity);
         }
     }
 }

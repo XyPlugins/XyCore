@@ -13,6 +13,8 @@ import org.xyplugin.xycore.internal.listener.CoreListener;
 import org.xyplugin.xycore.internal.lore.LoreCommandBindService;
 import org.xyplugin.xycore.internal.module.CoreModule;
 import org.xyplugin.xycore.internal.module.ModuleManager;
+import org.xyplugin.xycore.internal.mythicdrop.MythicMobsDropBridge;
+import org.xyplugin.xycore.internal.offhand.OffhandLoreGuardModule;
 import org.xyplugin.xycore.internal.permission.WorldPermissionModule;
 import org.xyplugin.xycore.internal.placeholder.ModernPapiBridge;
 import org.xyplugin.xycore.internal.protect.WorldProtectModule;
@@ -24,6 +26,7 @@ public final class XyCorePlugin extends JavaPlugin {
     private static XyCorePlugin instance;
     private CoreApiImpl api;
     private ModernPapiBridge papiBridge;
+    private MythicMobsDropBridge mythicDropBridge;
     private ModuleManager moduleManager;
     private int autosaveTask = -1;
 
@@ -50,6 +53,7 @@ public final class XyCorePlugin extends JavaPlugin {
         moduleManager.register(new ServerRulesModule(this));
         moduleManager.register(new MythicSpawnerHologramModule(this));
         moduleManager.register(new ItemNameDisplayModule(this));
+        moduleManager.register(new OffhandLoreGuardModule(this));
         api.getReloads().register(moduleManager);
         try {
             moduleManager.refreshConfiguredModules();
@@ -58,6 +62,7 @@ public final class XyCorePlugin extends JavaPlugin {
             failure.printStackTrace();
         }
         if (getCommand("xycore") != null) getCommand("xycore").setExecutor(new CoreCommand(this));
+        refreshMythicDropBridge();
 
         long minutes = Math.max(1L, getConfig().getLong("player-data.autosave-minutes", 5L));
         autosaveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this,
@@ -69,6 +74,7 @@ public final class XyCorePlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         if (autosaveTask != -1) Bukkit.getScheduler().cancelTask(autosaveTask);
+        if (mythicDropBridge != null) mythicDropBridge.unregister();
         if (moduleManager != null) moduleManager.disableAll();
         if (papiBridge != null) {
             papiBridge.unregister();
@@ -88,6 +94,7 @@ public final class XyCorePlugin extends JavaPlugin {
         reloadConfig();
         api.refreshOptionalIntegrations();
         refreshPlaceholderBridge();
+        refreshMythicDropBridge();
         api.getReloads().reloadAll();
     }
 
@@ -112,6 +119,39 @@ public final class XyCorePlugin extends JavaPlugin {
             // PAPI 缺少新版 PlaceholderExpansion 时，Core 仍可继续提供内部变量服务。
             papiBridge = null;
             getLogger().warning("PlaceholderExpansion 不兼容，已禁用 PAPI 桥接: " + failure.getMessage());
+        }
+    }
+
+    private void refreshMythicDropBridge() {
+        if (mythicDropBridge != null) {
+            mythicDropBridge.unregister();
+            mythicDropBridge = null;
+        }
+        if (!getConfig().getBoolean("integrations.mythicmobs-drop-bridge.enabled", true)) return;
+        Plugin mythic = Bukkit.getPluginManager().getPlugin("MythicMobs");
+        if (mythic == null || !mythic.isEnabled()) return;
+        if (!isMythicDropApiPresent(mythic)) {
+            getLogger().warning("MythicMobs 掉落表物品库桥接不可用：当前版本缺少 MythicDropLoadEvent。");
+            return;
+        }
+        try {
+            mythicDropBridge = new MythicMobsDropBridge(this);
+            if (!mythicDropBridge.register()) mythicDropBridge = null;
+        } catch (Throwable failure) {
+            mythicDropBridge = null;
+            getLogger().warning("MythicMobs 掉落表物品库桥接初始化失败: " + failure.getMessage());
+        }
+    }
+
+    private boolean isMythicDropApiPresent(Plugin mythic) {
+        try {
+            ClassLoader loader = mythic == null ? getClass().getClassLoader() : mythic.getClass().getClassLoader();
+            Class.forName("io.lumine.xikage.mythicmobs.api.bukkit.events.MythicDropLoadEvent", false, loader);
+            Class.forName("io.lumine.xikage.mythicmobs.drops.IItemDrop", false, loader);
+            Class.forName("io.lumine.xikage.mythicmobs.adapters.bukkit.BukkitItemStack", false, loader);
+            return true;
+        } catch (ClassNotFoundException ignored) {
+            return false;
         }
     }
 
@@ -148,6 +188,10 @@ public final class XyCorePlugin extends JavaPlugin {
                 papiBridge != null, "%xycore_*%", "未挂钩（Expansion 不兼容或注册失败）"));
         getLogger().info(" - MythicMobs: " + hookStatus("MythicMobs", "integrations.mythicmobs",
                 hasAvailableItemProvider("mythicmobs"), "ItemProvider", "未挂钩（物品 API 不兼容）"));
+        getLogger().info(" - MythicMobs Drops: " + hookStatus("MythicMobs",
+                "integrations.mythicmobs-drop-bridge.enabled",
+                mythicDropBridge != null && mythicDropBridge.isRegistered(),
+                "XyCoreItemLibrary", "未挂钩（掉落 API 不兼容）"));
         CoreModule spawnerHologram = moduleManager == null
                 ? null : moduleManager.getModule("mythic-spawner-hologram");
         getLogger().info(" - HolographicDisplays: " + hookStatus("HolographicDisplays",

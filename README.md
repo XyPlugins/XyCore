@@ -1,4 +1,4 @@
-# XyCore 0.3.12
+# XyCore 0.3.18
 
 XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核心插件。
 
@@ -13,9 +13,11 @@ XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核�
 - JDBC 存储使用 HikariCP 数据库连接池。
 - Vault 经济接口桥接。
 - PlaceholderAPI 正式新版变量扩展与动态变量命名空间。
-- AttributePlus 属性读取桥接与属性源直接写入/移除桥接。
+- AttributePlus 属性读取桥接与属性源直接写入/移除桥接，写入或移除后会主动刷新 AP 缓存。
 - DragonCore GUI、按键、变量、客户端数据包桥接。
 - 原版物品与 MythicMobs 物品库软桥接。
+- MythicMobs 掉落表完整物品ID桥接，可直接掉落 XyItems 等 XyCore 物品库物品。
+- 原版45号副手槽Lore保护，防止非副武器绕过DragonCore自定义槽位。
 - MythicMobs 刷怪点自动全息显示。
 - MythicMobs 已加载刷新点一键粘贴到玩家脚下。
 - 无额外实体、无周期任务的掉落物彩色名称显示。
@@ -25,7 +27,7 @@ XyCore 是一款面向 `Paper 1.12.2 build 1620` 的 RPG/MMO 服务器底层核�
 
 ## 快速使用
 
-1. 将 `XyCore-0.3.12.jar` 放入 `plugins` 文件夹。
+1. 将 `XyCore-0.3.18.jar` 放入 `plugins` 文件夹。
 2. 启动服务器生成 `plugins/XyCore/config.yml`。
 3. 在 `config.yml` 中开启需要的模块。
 4. 使用 `/xycore reload` 或重启服务器。
@@ -85,6 +87,11 @@ modules:
   # 开启后生成：plugins/XyCore/modules/item-name-display.yml
   item-name-display: false
 
+  # OffhandLoreGuard：副手槽Lore保护模块。
+  # 作用：限制原版45号副手槽只能放入带指定Lore的副武器，防止墨魄等道具绕过自定义槽位。
+  # 开启后生成：plugins/XyCore/modules/offhand-lore-guard.yml
+  offhand-lore-guard: false
+
   # Kit：礼包/新手包模块预留开关。
   # 当前版本暂未实现，开启也不会生成模块配置。
   kit: false
@@ -100,10 +107,10 @@ modules:
 
 模块配置生成规则：
 
-- 模块为 `false` 时，不生成对应模块配置。
+- 模块为 `false` 时，不加载对应模块配置。
 - 模块改为 `true` 后，使用 `/xycore reload` 或重启服务器，会生成对应模块配置。
-- 已开启过的模块再次改为 `false` 后，执行 `/xycore reload` 会卸载模块并删除对应模块配置。
-- 服务器正常关闭时只卸载模块，不会删除模块配置。
+- 已开启过的模块再次改为 `false` 后，执行 `/xycore reload` 只会卸载模块，不会删除对应模块配置。
+- 模块配置文件只在你手动删除时才会消失，测试期可以放心频繁替换 JAR。
 
 当前内置模块配置：
 
@@ -451,6 +458,64 @@ ChunkLoadEvent -> 处理随区块载入的掉落物
 
 没有 HolographicDisplays、HolographicExtension、PlaceholderAPI 或 ProtocolLib 依赖。
 
+## OffhandLoreGuard 副手槽保护模块
+
+开启 `modules.offhand-lore-guard` 后，XyCore 会在服务端限制原版45号副手槽。这个槽位在 DragonCore GUI 中通常写作：
+
+```yaml
+identifier: "container_45"
+```
+
+DragonCore `SlotConfig.yml` 脚本对 `container_45` 可能只能提示，不能可靠取消原版服务端背包移动。因此本模块会直接拦截副手槽点击、拖拽、F键交换，并在必要时下一 tick 把已经进入副手的非法物品退回背包。
+
+默认允许的副手物品必须含有：
+
+```text
+&7类型: &f副武器
+```
+
+开启方式：
+
+```yaml
+modules:
+  offhand-lore-guard: true
+```
+
+模块配置生成在：
+
+```text
+plugins/XyCore/modules/offhand-lore-guard.yml
+```
+
+默认配置核心项：
+
+```yaml
+settings:
+  sync-repeat-ticks:
+    - 1
+    - 3
+    - 6
+
+match:
+  required-lore: '&7类型: &f副武器'
+  mode: contains
+  ignore-spaces: true
+  ignore-colors: false
+```
+
+如果副武器 Lore 写成 `&7类型: &f副手`，只需要把 `required-lore` 改成对应文本。非法物品会优先退回背包；背包满且 `drop-overflow: true` 时掉落在玩家脚下，避免吞物品。
+
+`sync-repeat-ticks` 用于压短 DragonCore `container_45` 的客户端残影时间。默认 1、3、6 tick 各同步一次。如果实测仍有 1 秒左右残影，可以追加：
+
+```yaml
+settings:
+  sync-repeat-ticks:
+    - 1
+    - 3
+    - 6
+    - 10
+```
+
 ## 软依赖说明
 
 以下插件都是软依赖：
@@ -491,6 +556,46 @@ boolean matched = XyCore.get().getItems().matches("xyitems:forge_crystal", stack
 
 原版匹配会主动排除已经被XyItems或MythicMobs识别的自定义物品。因此一个材质为铁锭的RPG物品不会同时被误当作 `minecraft:IRON_INGOT` 消耗。匹配不读取显示名称和Lore。
 
+## MythicMobs 掉落引用 XyCore 物品库
+
+0.3.13 起，XyCore 可以把 MythicMobs 掉落表里的完整物品ID转交给统一物品库生成。
+
+常用写法：
+
+```yaml
+Drops:
+  - xyitems:chiyamopo 1 0.05
+  - xyitems:example_forge_crystal 1-2 0.2
+```
+
+含义：
+
+- `xyitems:chiyamopo`：调用 XyItems 物品库生成 `chiyamopo`。
+- `1` 或 `1-2`：沿用 MythicMobs 自己的数量写法。
+- `0.05`：沿用 MythicMobs 自己的概率写法，即 5%。
+
+掉落出来的是正式 provider 生成的物品，不按显示名或 Lore 伪造。对 XyItems 来说，怪物掉出的就是带隐藏 NBT 的基础物品；如果该物品开启了鉴定，玩家获得后仍按 XyItems 原规则右键鉴定。
+
+默认配置允许所有已注册 provider：
+
+```yaml
+integrations:
+  mythicmobs-drop-bridge:
+    enabled: true
+    providers:
+      - '*'
+```
+
+如果未来和其他 MythicMobs 自定义掉落插件命名冲突，可以收窄为只允许 XyItems：
+
+```yaml
+integrations:
+  mythicmobs-drop-bridge:
+    enabled: true
+    providers:
+      - xyitems
+```
+
 ## 命令
 
 ```text
@@ -519,6 +624,40 @@ boolean matched = XyCore.get().getItems().matches("xyitems:forge_crystal", stack
 `mms paste` 是内置管理命令，不需要开启模块。它调用 MythicMobs 4.11 自带的刷新点复制逻辑，新刷新点会由 MythicMobs 保存到自己的 Spawners 配置里，XyCore 不额外保存刷新点数据。
 
 ## 版本记录
+
+### 0.3.18
+
+- AttributePlus 属性源写入/删除后主动调用 `updateAttribute` 刷新 AP 缓存。
+- 修复 XyTitle 等插件清理 `xytitle:<uuid>` 属性源后，玩家当前 AP 属性可能没有立刻消失的问题。
+
+### 0.3.17
+
+- OffhandLoreGuard 新增 `settings.sync-repeat-ticks`。
+- 副手相关操作后默认 1、3、6 tick 各同步一次背包，进一步缩短 DragonCore `container_45` 的客户端残影。
+
+### 0.3.16
+
+- 模块关闭后不再自动删除 `plugins/XyCore/modules/*.yml`。
+- 解决测试期频繁替换 XyCore 或临时关闭模块后，需要重新配置模块文件的问题。
+- 后续模块配置只会在文件缺失且模块开启时生成，清理旧配置需要服主手动删除。
+
+### 0.3.15
+
+- 修复合法副武器放入 DragonCore `container_45` 后，客户端手上短暂残留一把显示的问题。
+- OffhandLoreGuard 只在触及副手槽、拖拽到副手槽或 F 键交换后执行下一 tick 同步，减少额外刷新。
+
+### 0.3.14
+
+- 新增 `offhand-lore-guard` 副手槽Lore保护模块。
+- 服务端限制 DragonCore `container_45` 对应的原版45号副手槽，只允许带指定 Lore 的副武器放入。
+- 支持拦截点击、拖拽、F键交换，并能下一 tick 退回已经进入副手的非法物品。
+
+### 0.3.13
+
+- 新增 MythicMobs 掉落表完整物品ID桥接。
+- MythicMobs `Drops` 可直接写 `xyitems:<物品ID>`，由 XyCore 统一物品库转交 XyItems 生成正式物品。
+- 桥接默认允许所有已注册 provider，也可通过 `integrations.mythicmobs-drop-bridge.providers` 限制为 `xyitems`。
+- 未安装 MythicMobs 或 API 不兼容时自动跳过，不影响 XyCore 启动。
 
 ### 0.3.11
 
@@ -627,7 +766,7 @@ NoRainModule:
 - 新增内置模块管理器，支持模块启用、重载、关闭生命周期。
 - 模块配置统一移动到 `plugins/XyCore/modules/`。
 - 模块配置只在模块开启时生成。
-- 模块关闭并执行 `/xycore reload` 时，会删除对应模块配置。
+- 当时模块关闭并执行 `/xycore reload` 时会删除对应模块配置；0.3.16 起已改为保留配置。
 - 重写 LoreCommandBind，修复 0.2.x 中 LoreCommand 无法正常使用的问题。
 - LoreCommandBind 新增左右键触发、冷却、消耗、PlaceholderAPI 条件、AttributePlus 临时属性源效果。
 - LoreCommandBind 加强指令执行安全限制。
@@ -665,5 +804,5 @@ gradlew.bat clean build
 输出文件：
 
 ```text
-build/libs/XyCore-0.3.12.jar
+build/libs/XyCore-0.3.18.jar
 ```

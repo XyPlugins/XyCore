@@ -13,6 +13,106 @@
 - 模块开关位于：`src/main/resources/config.yml -> modules`
 - 模块默认配置位于：`src/main/resources/modules/`
 
+## v0.3.18 变更
+
+### AttributePlus 属性源刷新
+
+- 服主反馈 XyTitle 取消佩戴称号后，AP 属性应该立刻消失。
+- XyCore AttributePlus 桥接原先只调用 `addSourceAttribute` / `takeSourceAttribute`，没有主动触发 `updateAttribute`。
+- `AttributePlusPlaceholderService.DirectApi` 新增可选 `updateAttribute(LivingEntity)` 反射句柄。
+- `addSource` 和 `removeSource` 成功操作 source 后，会调用 `updateAttribute` 让 AP 立即重算。
+- 该操作只发生在 source 写入/删除时，不新增周期任务，不扫描玩家。
+
+## v0.3.17 变更
+
+### OffhandLoreGuard 多次同步
+
+- 服主确认 0.3.15 后副手逻辑问题已消失，但客户端残影仍停留约 1-2 秒。
+- `OffhandLoreGuardModule` 新增 `settings.sync-repeat-ticks`，默认 `[1, 3, 6]`。
+- `scheduleCleanup` 会在这些 tick 上分别执行 `cleanupOffhand` 和 `player.updateInventory()`。
+- 调度仍只发生在副手相关操作：点击副手槽、拖拽到副手槽、F 键交换、玩家登录兜底；普通背包点击不会触发额外同步。
+- 如果后续实服仍有残影，优先让服主在模块配置里追加 `10`，不要改成每 tick 长时间刷新。
+
+## v0.3.16 变更
+
+### 模块配置保留策略
+
+- 服主反馈测试期频繁替换 XyCore JAR 后，模块配置文件会消失，需要反复重配。
+- 根因：`ModuleManager#refreshConfiguredModules` 原先在模块未启用时会调用 `AbstractCoreModule#deleteConfigFile()`。
+- 当前策略改为：
+  - `modules.<id>: true`：启用模块，缺少模块 yml 时生成默认配置。
+  - `modules.<id>: false`：卸载模块，但保留已有模块 yml。
+  - 配置文件只由服主手动删除，不再由 Core 自动清理。
+- 保留 `deleteConfigFile()` 方法，以后如确实需要 `/xycore module cleanup` 这类显式清理命令可以复用，但禁止在普通 reload/disable 流程自动调用。
+- 这能避免旧 `config.yml` 缺少新模块开关、临时关闭模块或测试换包时误删玩家已经调好的配置。
+
+## v0.3.15 变更
+
+### OffhandLoreGuard 客户端残影同步
+
+- 服主反馈合法副武器放入 DragonCore `container_45` 后，客户端手上还会短暂显示一把武器，过一会才消失。
+- 判断为 DragonCore 原版容器槽与 Bukkit 副手槽的客户端残影，不是服务端真实复制。
+- `OffhandLoreGuardModule#scheduleCleanup` 现在在下一 tick 清理后无论是否清理非法物品，都会主动 `player.updateInventory()`。
+- `InventoryClickEvent` 和 `InventoryDragEvent` 的调度范围收窄到实际触及副手槽时，避免普通背包点击都触发额外刷新。
+- `PlayerSwapHandItemsEvent` 对合法交换也会安排下一 tick 同步。
+
+## v0.3.14 变更
+
+### OffhandLoreGuard 副手槽Lore保护模块
+
+- 新模块 id：`offhand-lore-guard`
+- 实现类：`org.xyplugin.xycore.internal.offhand.OffhandLoreGuardModule`
+- 默认配置：`src/main/resources/modules/offhand-lore-guard.yml`
+- 主配置开关：
+
+```yaml
+modules:
+  offhand-lore-guard: false
+```
+
+- 背景：DragonCore 界面里的 `identifier: "container_45"` 是原版副手容器槽。SlotConfig JS 可以提示，但不能可靠取消服务端背包移动。
+- 模块通过 Bukkit 事件在服务端拦截：
+  - `InventoryClickEvent`：点击45号副手槽或 Bukkit 副手槽。
+  - `InventoryDragEvent`：拖拽到 raw slot 45。
+  - `PlayerSwapHandItemsEvent`：F键主副手交换。
+  - 下一 tick 延迟检查：兜底清理已经进入副手的非法物品。
+- 默认要求副手物品 Lore 包含 `&7类型: &f副武器`。
+- 判断支持 `contains/exact`、忽略空格、可选忽略颜色。
+- 清理非法副手物品时先清空副手再退回背包；背包满且 `settings.drop-overflow: true` 时掉落在玩家脚下，避免吞物品。
+- 本模块提示属于玩家玩法限制，默认使用 XyCore `messages.prefix`。
+
+## v0.3.13 变更
+
+### MythicMobs 掉落表物品库桥接
+
+- 新增实现类：
+  - `org.xyplugin.xycore.internal.mythicdrop.MythicMobsDropBridge`
+  - `org.xyplugin.xycore.internal.mythicdrop.XyCoreLibraryDrop`
+- 目标是让 MythicMobs 4.11 的 `Drops` 直接引用 XyCore 统一物品库完整ID：
+
+```yaml
+Drops:
+  - xyitems:chiyamopo 1 0.05
+  - xyitems:example_forge_crystal 1-2 0.2
+```
+
+- 桥接放在 XyCore，不放在 XyItems。后续任何插件只要注册 `ItemProvider`，理论上都能被 MM 掉落表引用。
+- 配置开关：
+
+```yaml
+integrations:
+  mythicmobs-drop-bridge:
+    enabled: true
+    providers:
+      - '*'
+```
+
+- `providers` 是白名单，`'*'` 表示允许所有当前已注册且可用的 provider。若后续与其他 MM 自定义掉落插件命名冲突，可改成只允许 `xyitems`。
+- 该桥接使用 MythicMobs 的 `MythicDropLoadEvent`，只在 MM 加载掉落配置时注册自定义 Drop；不会监听怪物死亡、不会周期扫描。
+- `XyCoreLibraryDrop#getDrop` 在真正掉落时调用 `ItemLibraryService#create(namespacedId, amount)`，因此 XyItems 物品会保留正式隐藏NBT，且 XyItems 配置重载后的生成逻辑会被后续掉落自然使用。
+- 项目通过 `src/stub/java/io/lumine/xikage/mythicmobs/...` 提供编译期最小 stub，最终 JAR 不包含这些 stub，也不打入 MythicMobs。
+- `XyCorePlugin` 只在检测到 MythicMobs 已启用且存在 `MythicDropLoadEvent`、`IItemDrop`、`BukkitItemStack` 时才实例化桥接类，避免无 MythicMobs 服务器出现 `NoClassDefFoundError`。
+
 ## v0.3.12 变更
 
 ### Xy 系列前缀语义最终确认

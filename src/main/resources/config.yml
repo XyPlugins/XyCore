@@ -11,9 +11,9 @@
 modules:
   # ============================================================
   # 模块总开关
-  # false = 关闭模块，不生成/不加载对应模块配置。
+  # false = 关闭模块，不加载对应模块配置。
   # true  = 开启模块，启动服务器或执行 /xycore reload 后生成对应模块配置。
-  # 已开启模块改回 false 并执行 /xycore reload 后，会删除对应模块 yml。
+  # 已开启模块改回 false 并执行 /xycore reload 后，只会卸载模块，不会删除对应模块 yml。
   # ============================================================
 
   # LoreCommandBind：Lore 识别指令模块。
@@ -48,6 +48,11 @@ modules:
   # 默认只显示拥有自定义名称的 MythicMobs/RPG 物品。
   # 开启后生成：plugins/XyCore/modules/item-name-display.yml
   item-name-display: false
+
+  # OffhandLoreGuard：副手槽Lore保护模块。
+  # 作用：限制原版45号副手槽只能放入带指定Lore的副武器，防止墨魄等道具绕过自定义槽位。
+  # 开启后生成：plugins/XyCore/modules/offhand-lore-guard.yml
+  offhand-lore-guard: false
 
   # Kit：礼包/新手包模块预留开关。
   # 当前 0.3.9 暂未实现，开启也不会生成模块配置。
@@ -106,6 +111,16 @@ player-data:
 integrations:
   # MythicMobs 物品桥接。关闭后 Core 只提供原版物品 Provider。
   mythicmobs: true
+
+  mythicmobs-drop-bridge:
+    # MythicMobs 掉落表完整物品ID桥接。
+    # 开启后，MM Drops 可以直接写 xyitems:物品ID 这类 provider:item 格式。
+    # 例：- xyitems:chiyamopo 1 0.05
+    enabled: true
+    # 允许被 MythicMobs 掉落表引用的物品库。
+    # '*' 表示允许所有已注册到 XyCore 的物品库，例如 xyitems、minecraft、mythicmobs。
+    providers:
+      - '*'
 
   # PlaceholderAPI 桥接。未安装 PAPI 时 Core 仍可启动。
   placeholderapi: true

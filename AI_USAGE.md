@@ -1,5 +1,94 @@
 # AI 使用记录
 
+## 0.3.18
+
+本次维护由 AI 根据服主反馈“称号不佩戴后 AP 属性应该消失”辅助完成。
+
+关键决策：
+
+- 复查 XyTitle 后确认称号侧会通过 XyCore 删除 `xytitle:<uuid>` 属性源。
+- 进一步检查 AttributePlus 3.3.3.x API，确认存在 `AttributeAPI.updateAttribute(LivingEntity)`。
+- XyCore 的 AttributePlus 桥接在 `addSource` 与 `removeSource` 后主动调用 `updateAttribute`，让 AP 当前属性立即重新计算。
+- 该刷新只发生在插件主动写入/删除属性源时，不增加周期任务或玩家扫描。
+
+验证记录：
+
+- `gradlew.bat clean build --no-daemon` 成功。
+
+## 0.3.17
+
+本次维护由 AI 根据服主反馈“副武器放入副手后逻辑正常，但客户端残影仍会停留1-2秒”辅助完成。
+
+关键决策：
+
+- 判断残影来自 DragonCore `container_45` 与原版副手槽的客户端显示同步，不是服务端复制。
+- OffhandLoreGuard 将单次下一 tick 同步改为可配置的短时间多次同步。
+- 默认 `settings.sync-repeat-ticks: [1, 3, 6]`，只在触及副手槽、拖拽到副手槽或 F 键交换后触发，不影响普通背包点击。
+
+验证记录：
+
+- `gradlew.bat clean build --no-daemon` 成功。
+
+## 0.3.16
+
+本次维护由 AI 根据服主反馈“测试期频繁更换 XyCore 会导致模块配置文件夹消失，需要反复重配”辅助完成。
+
+关键决策：
+
+- 确认根因是 `ModuleManager` 在模块配置为 `false` 时会调用 `deleteConfigFile()` 删除模块 yml。
+- 改为禁用模块只卸载功能，不删除 `plugins/XyCore/modules/*.yml`。
+- 保留 `AbstractCoreModule#deleteConfigFile()` 方法本身，作为未来显式清理命令或维护工具的备用能力，但不再自动调用。
+- 更新默认配置注释和文档，避免后续 AI 误以为关闭模块应该删除配置。
+
+验证记录：
+
+- `gradlew.bat clean build --no-daemon` 成功。
+
+## 0.3.15
+
+本次维护由 AI 根据服主反馈“合法副武器放入副手后，手上还会短暂显示一把，过一会才消失”辅助完成。
+
+关键决策：
+
+- 判断这是 DragonCore `container_45` 与原版副手槽同步产生的客户端残影，不是服务端真实复制。
+- OffhandLoreGuard 改为只在触及副手槽、拖拽到副手槽或 F 键交换后，下一 tick 执行清理并主动 `updateInventory()`。
+- 同时收窄监听范围，避免普通背包点击也触发额外同步。
+
+验证记录：
+
+- `gradlew.bat clean build --no-daemon` 成功。
+
+## 0.3.14
+
+本次维护由 AI 根据服主反馈“DragonCore 脚本会提示但 container_45 仍会放入物品”辅助完成。
+
+关键决策：
+
+- 确认 `container_45` 属于原版副手容器槽，DragonCore SlotConfig 脚本无法可靠取消服务端背包移动。
+- 新增 `OffhandLoreGuard` 模块在 Bukkit 服务端层拦截副手点击、拖拽与 F 键交换。
+- 对 DragonCore 客户端已经显示放入的情况，模块在下一 tick 检查副手并把非法物品退回背包；背包满时按配置掉落在玩家脚下。
+- 默认匹配 `&7类型: &f副武器`，用于阻止墨魄等非副武器获得副手属性。
+
+验证记录：
+
+- `gradlew.bat clean build --no-daemon` 成功。
+
+## 0.3.13
+
+本次维护由 AI 根据服主确认的“MM 怪物掉落最好通过 XyCore 通用物品库桥接”方案辅助完成。
+
+关键决策：
+
+- 桥接放在 XyCore，而不是 XyItems，避免后续每个物品插件都单独接 MythicMobs。
+- MythicMobs 掉落表使用 `provider:item` 格式，例如 `xyitems:chiyamopo`。
+- XyCore 只负责把 MM 自定义掉落转发到 `ItemLibraryService#create`，具体物品仍由对应 provider 生成。
+- 使用 compile-only stub 编译 MythicMobs 4.11 相关类，最终 JAR 不打入 MythicMobs 类。
+- 未安装 MythicMobs 或缺少 `MythicDropLoadEvent` 时桥接自动跳过，不影响 Core 启动。
+
+验证记录：
+
+- `gradlew.bat clean build --no-daemon` 成功。
+
 ## 0.3.12
 
 本次维护由 AI 根据服主最终确认的“前端玩家玩法提示统一、后台管理提示保留原插件名”规则辅助完成。

@@ -33,6 +33,12 @@
 
 Bukkit 1.12 的 `YamlConfiguration#save` 会丢失注释，不要为了写回配置而覆盖用户已有模块 yml。
 
+模块配置保留约定：
+
+- `modules.<id>: false` 只表示不加载/卸载模块，不得自动删除 `plugins/XyCore/modules/*.yml`。
+- 模块 yml 只在模块首次开启且文件缺失时生成。
+- 如果未来需要清理模块配置，必须做成显式命令或让服主手动删除，禁止在 `/xycore reload` 或普通关闭流程中自动清理。
+
 ## MythicSpawnerHologram
 
 核心类：
@@ -80,6 +86,22 @@ Bukkit 1.12 的 `YamlConfiguration#save` 会丢失注释，不要为了写回配
 - 找不到源刷新点时必须返回“没有该刷新点位”。
 - 新刷新点 ID 由 XyCore 自动生成并避免重复；数据仍由 MythicMobs 保存，XyCore 不额外持久化刷新点。
 
+## MythicMobs 掉落表物品库桥接
+
+核心类：
+
+- `org.xyplugin.xycore.internal.mythicdrop.MythicMobsDropBridge`
+- `org.xyplugin.xycore.internal.mythicdrop.XyCoreLibraryDrop`
+
+约定：
+
+- 该桥接属于 XyCore 通用物品库能力，不属于 XyItems 私有功能。
+- MythicMobs `Drops` 支持 `provider:item`，例如 `xyitems:chiyamopo 1 0.05`。
+- 只在检测到 MythicMobs 4.11 的 `MythicDropLoadEvent`、`IItemDrop` 和 `BukkitItemStack` 时注册，未安装或版本不兼容时必须安静跳过。
+- 不监听怪物死亡，不周期扫描；只在 MythicMobs 加载掉落配置时注册 Drop，真正生成时调用 `ItemLibraryService#create`。
+- `integrations.mythicmobs-drop-bridge.providers` 是冲突兜底白名单；默认 `'*'`，如遇其他插件自定义掉落命名冲突，可改为只允许 `xyitems`。
+- `src/stub/java/io/lumine/xikage/mythicmobs/...` 是编译期最小 stub，最终 JAR 不得包含 MythicMobs 类。
+
 ## ItemNameDisplay
 
 核心类：`org.xyplugin.xycore.internal.itemdisplay.ItemNameDisplayModule`
@@ -91,6 +113,20 @@ Bukkit 1.12 的 `YamlConfiguration#save` 会丢失注释，不要为了写回配
 - `ItemSpawnEvent` 处理新掉落物，`ChunkLoadEvent` 处理加载区块里的已有掉落物。
 - 使用 Bukkit Metadata 保存原名称和 XyCore 应用状态。
 - 如果实体名称被其他插件再次修改，XyCore 必须放弃管理，避免重载时覆盖外部插件行为。
+
+## OffhandLoreGuard
+
+核心类：`org.xyplugin.xycore.internal.offhand.OffhandLoreGuardModule`
+
+约定：
+
+- 该模块用于保护原版45号副手槽，也就是 DragonCore GUI 中常见的 `container_45`。
+- 不要只依赖 DragonCore SlotConfig JS；该脚本能提示但不能可靠取消原版容器槽服务端移动。
+- 模块必须同时处理 `InventoryClickEvent`、`InventoryDragEvent`、`PlayerSwapHandItemsEvent` 和下一 tick 兜底清理。
+- 默认要求副手物品含 `&7类型: &f副武器`，用于避免墨魄等道具通过副手获得属性。
+- 清理非法副手物品时不能直接删除；必须尝试退回背包，背包满时按配置掉落在玩家脚下。
+- 玩家提示默认走 XyCore 统一玩家前缀，后台日志仍走 XyCore logger。
+- `settings.sync-repeat-ticks` 只能用于副手相关操作后的短时间同步，不得改成周期任务或普通背包点击全量刷新；默认 `[1, 3, 6]` 已兼顾 DragonCore 残影和性能。
 
 ## ServerRules
 

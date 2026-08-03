@@ -41,9 +41,6 @@ public final class ModuleManager implements org.xyplugin.xycore.api.service.Relo
                 plugin.getLogger().info("模块已启用: " + module.getDisplayName());
             } else {
                 module.disable();
-                if (module instanceof AbstractCoreModule) {
-                    ((AbstractCoreModule) module).deleteConfigFile();
-                }
             }
         }
     }
